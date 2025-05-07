@@ -1,13 +1,18 @@
 import type * as React from "react"
-import { Link, useLocation } from "react-router-dom"
+import { Link, useLocation, useNavigate } from "react-router-dom"
 import { cn } from "@/lib/utils"
 import { Home, Users, FileText, CreditCard, BarChart3, Map, Settings, LogOut } from 'lucide-react'
 import { Button } from "@/components/ui/button"
+import { apiClient } from "@/lib/api-client"
+import { LOGOUT_ROUTE } from "@/utils/constant"
+import { useAppStore } from "@/store"
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function Sidebar({ className, ...props }: SidebarProps) {
   const location = useLocation()
+  const navigate = useNavigate()
+  const {setUserInfo} = useAppStore()
 
   const routes = [
     {
@@ -52,6 +57,22 @@ export function Sidebar({ className, ...props }: SidebarProps) {
     },
   ]
 
+  const logout = async () => {
+    try {
+      const res = await apiClient.post(
+        LOGOUT_ROUTE,
+        {},
+        {withCredentials: true}
+      );
+      if (res.status == 200){
+        setUserInfo(undefined)
+        navigate('/login')
+      }
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
   return (
     <div className={cn("flex h-screen w-64 flex-col border-r bg-background", className)} {...props}>
       <div className="flex h-14 items-center border-b px-4">
@@ -78,11 +99,11 @@ export function Sidebar({ className, ...props }: SidebarProps) {
         </nav>
       </div>
       <div className="border-t p-4">
-        <Button variant="ghost" className="w-full justify-start gap-2" asChild>
-          <Link to="/login">
-            <LogOut className="h-4 w-4" />
+        <Button variant="ghost" className="w-full justify-start gap-2" onClick = {logout}>
+            <LogOut 
+              className="h-4 w-4"
+             />
             Đăng xuất
-          </Link>
         </Button>
       </div>
     </div>

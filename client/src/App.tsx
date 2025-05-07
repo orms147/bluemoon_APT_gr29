@@ -10,9 +10,11 @@ import { ThuPhiPage } from "./pages/thu-phi"
 import { TamTruTamVangPage } from "./pages/tam-tru-tam-vang"
 import { ThongKePage } from "./pages/thong-ke"
 import { CaiDatPage } from "./pages/cai-dat"
+import {useAppStore} from "./store";
 
 function App() {
-  const isAuthenticated = false
+  const {userInfo} = useAppStore()
+  const isAuthenticated = !!userInfo
 
   return (
     <Router>
