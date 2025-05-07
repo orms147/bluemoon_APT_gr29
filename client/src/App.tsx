@@ -12,7 +12,7 @@ import { ThongKePage } from "./pages/thong-ke"
 import { CaiDatPage } from "./pages/cai-dat"
 
 function App() {
-  const isAuthenticated = true
+  const isAuthenticated = false
 
   return (
     <Router>

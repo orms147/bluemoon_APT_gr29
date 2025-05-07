@@ -1,9 +1,20 @@
-const express = require('express');
-const cors = require('cors');
-const app = express();
-const port = 3000;
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
 
-app.use(cors());
+dotenv.config();
+
+const app = express();
+const port = process.env.PORT || 3001;
+
+app.use(
+  cors({
+    origin: process.env.ORIGIN,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 
 // Define your routes here
@@ -14,3 +25,5 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
+
+
