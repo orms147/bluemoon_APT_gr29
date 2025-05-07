@@ -65,7 +65,7 @@ export function Sidebar({ className, ...props }: SidebarProps) {
         {withCredentials: true}
       );
       if (res.status == 200){
-        setUserInfo(undefined)
+        setUserInfo(undefined as any)
         navigate('/login')
       }
     } catch (error) {

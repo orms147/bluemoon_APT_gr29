@@ -10,12 +10,34 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { apiClient } from '@/lib/api-client'
+import { LOGOUT_ROUTE } from '@/utils/constant'
+import { useAppStore } from '@/store'
+import { useNavigate } from 'react-router-dom'
 
 interface HeaderProps {
   title: string
 }
 
 export function Header({ title }: HeaderProps) {
+  const navigate = useNavigate()
+  const {setUserInfo} = useAppStore()
+
+  const logout = async () => {
+      try {
+        const res = await apiClient.post(
+          LOGOUT_ROUTE,
+          {},
+          {withCredentials: true}
+        );
+        if (res.status == 200){
+          setUserInfo(undefined as any)
+          navigate('/login')
+        }
+      } catch (error) {
+        console.error(error)
+      }
+    }
   return (
     <header className="flex h-14 items-center gap-4 border-b bg-background px-6">
       <h1 className="text-xl font-semibold">{title}</h1>
@@ -42,7 +64,9 @@ export function Header({ title }: HeaderProps) {
             <DropdownMenuItem>Hồ sơ</DropdownMenuItem>
             <DropdownMenuItem>Cài đặt</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Đăng xuất</DropdownMenuItem>
+            <DropdownMenuItem onClick={logout}>
+              Đăng xuất
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
