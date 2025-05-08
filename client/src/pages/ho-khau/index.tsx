@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
@@ -20,53 +20,11 @@ import {
 import { Label } from "@/components/ui/label"
 import { Plus, MoreHorizontal, Search } from 'lucide-react'
 import type { HoKhau } from "@/types"
-
-// Mock data
-const mockHoKhau: HoKhau[] = [
-  {
-    id: "1",
-    maHoKhau: "HK001",
-    tenChuHo: "Nguyễn Văn A",
-    diaChi: "P.1201, Tòa A, BlueMoon",
-    soThanhVien: 4,
-    ngayLap: "2022-01-15",
-  },
-  {
-    id: "2",
-    maHoKhau: "HK002",
-    tenChuHo: "Trần Thị B",
-    diaChi: "P.1502, Tòa B, BlueMoon",
-    soThanhVien: 3,
-    ngayLap: "2022-02-20",
-  },
-  {
-    id: "3",
-    maHoKhau: "HK003",
-    tenChuHo: "Lê Văn C",
-    diaChi: "P.0902, Tòa C, BlueMoon",
-    soThanhVien: 5,
-    ngayLap: "2022-03-10",
-  },
-  {
-    id: "4",
-    maHoKhau: "HK004",
-    tenChuHo: "Phạm Thị D",
-    diaChi: "P.1103, Tòa A, BlueMoon",
-    soThanhVien: 2,
-    ngayLap: "2022-04-05",
-  },
-  {
-    id: "5",
-    maHoKhau: "HK005",
-    tenChuHo: "Hoàng Văn E",
-    diaChi: "P.1602, Tòa B, BlueMoon",
-    soThanhVien: 6,
-    ngayLap: "2022-05-12",
-  },
-]
+import { ADD_HOKHAU_ROUTE, GET_ALL_HOKHAU_ROUTE } from "@/utils/constant"
+import { apiClient } from "@/lib/api-client"
 
 export function HoKhauPage() {
-  const [hoKhauList] = useState<HoKhau[]>(mockHoKhau)
+  const [hoKhauList, setHoKhauList] = useState<HoKhau[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [newHoKhau, setNewHoKhau] = useState<Partial<HoKhau>>({
@@ -77,6 +35,15 @@ export function HoKhauPage() {
     ngayLap: new Date().toISOString().split("T")[0],
   })
 
+  useEffect(() => {
+    const getListHoKhau = async () => {
+      const response = await apiClient.get(GET_ALL_HOKHAU_ROUTE, {withCredentials: true})
+      setHoKhauList(response.data)
+    }
+    getListHoKhau()
+    
+  }, [])
+ 
   const filteredHoKhau = hoKhauList.filter(
     (hoKhau) =>
       hoKhau.maHoKhau.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -84,7 +51,7 @@ export function HoKhauPage() {
       hoKhau.diaChi.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setNewHoKhau((prev) => ({
       ...prev,
@@ -92,19 +59,32 @@ export function HoKhauPage() {
     }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // In a real app, you would add the new household to the database
-    console.log("New household:", newHoKhau)
     setIsDialogOpen(false)
-    // Reset form
-    setNewHoKhau({
-      maHoKhau: "",
-      tenChuHo: "",
-      diaChi: "",
-      soThanhVien: 1,
-      ngayLap: new Date().toISOString().split("T")[0],
-    })
+
+    try {
+      const response = await apiClient.post(
+        ADD_HOKHAU_ROUTE,
+        newHoKhau,
+        {withCredentials: true},
+      )
+      if (response.status === 201){
+        console.log("New household added successfully");
+        // Reset form
+        setNewHoKhau({
+          maHoKhau: "",
+          tenChuHo: "",
+          diaChi: "",
+          soThanhVien: 1,
+          ngayLap: new Date().toISOString().split("T")[0],
+        })
+        setHoKhauList([...hoKhauList, response.data])
+      } 
+      console.log(response);
+    } catch(error) {
+      console.log(error);
+    }
   }
 
   return (
@@ -195,7 +175,9 @@ export function HoKhauPage() {
                 </div>
               </div>
               <DialogFooter>
-                <Button type="submit">Lưu</Button>
+                <Button type="submit">
+                  Lưu
+                </Button>
               </DialogFooter>
             </form>
           </DialogContent>
@@ -227,7 +209,7 @@ export function HoKhauPage() {
           <TableBody>
             {filteredHoKhau.length > 0 ? (
               filteredHoKhau.map((hoKhau) => (
-                <TableRow key={hoKhau.id}>
+                <TableRow key={hoKhau.maHoKhau}>
                   <TableCell className="font-medium">{hoKhau.maHoKhau}</TableCell>
                   <TableCell>{hoKhau.tenChuHo}</TableCell>
                   <TableCell>{hoKhau.diaChi}</TableCell>
@@ -243,7 +225,7 @@ export function HoKhauPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem asChild>
-                          <Link to={`/ho-khau/${hoKhau.id}`}>Xem chi tiết</Link>
+                          <Link to={`/ho-khau/${hoKhau.maHoKhau}`}>Xem chi tiết</Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem>Sửa</DropdownMenuItem>
                         <DropdownMenuItem className="text-destructive">Xóa</DropdownMenuItem>
