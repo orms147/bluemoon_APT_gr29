@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import mongoose from 'mongoose';
 import authRoutes from './routes/AuthRoutes.js';
 import hoKhauRoutes from './routes/HoKhauRoutes.js';
+import nhanKhauRoutes from './routes/NhanKhauRoutes.js';
 
 dotenv.config();
 
@@ -25,6 +26,7 @@ app.use(cookieParser());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/ho-khau',hoKhauRoutes);
+app.use('/api/nhan-khau',nhanKhauRoutes);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

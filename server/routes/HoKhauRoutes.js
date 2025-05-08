@@ -5,12 +5,12 @@ const hoKhauRoutes = Router();
 
 // GET 
 hoKhauRoutes.get('/danh-sach-ho-khau', getAllHk);
-hoKhauRoutes.get('/:id', getHkById);
+hoKhauRoutes.get('/:maHoKhau', getHkById);
 // POST
 hoKhauRoutes.post('/them-ho-khau', addHk);
 // DELETE
-hoKhauRoutes.delete('/xoa-ho-khau/:id', deleteHk);
+hoKhauRoutes.delete('/xoa-ho-khau/:maHoKhau', deleteHk);
 // PUT
-hoKhauRoutes.put('/cap-nhat-ho-khau/:id', updateHk);
+hoKhauRoutes.put('/cap-nhat-ho-khau/:maHoKhau', updateHk);
 
 export default hoKhauRoutes;

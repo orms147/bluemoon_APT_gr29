@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
@@ -20,63 +20,11 @@ import {
 import { Label } from "@/components/ui/label"
 import { Plus, MoreHorizontal, Search } from 'lucide-react'
 import type { NhanKhau } from "@/types"
-
-// Mock data
-const mockNhanKhau: NhanKhau[] = [
-  {
-    id: "1",
-    maNhanKhau: "NK001",
-    hoTen: "Nguyễn Văn A",
-    ngaySinh: "1980-05-15",
-    gioiTinh: "Nam",
-    cccd: "012345678901",
-    hoKhauId: "1",
-    quanHe: "Chủ hộ",
-  },
-  {
-    id: "2",
-    maNhanKhau: "NK002",
-    hoTen: "Nguyễn Thị X",
-    ngaySinh: "1985-08-20",
-    gioiTinh: "Nữ",
-    cccd: "012345678902",
-    hoKhauId: "1",
-    quanHe: "Vợ",
-  },
-  {
-    id: "3",
-    maNhanKhau: "NK003",
-    hoTen: "Nguyễn Văn Y",
-    ngaySinh: "2010-03-10",
-    gioiTinh: "Nam",
-    cccd: "012345678903",
-    hoKhauId: "1",
-    quanHe: "Con",
-  },
-  {
-    id: "4",
-    maNhanKhau: "NK004",
-    hoTen: "Nguyễn Thị Z",
-    ngaySinh: "2015-12-25",
-    gioiTinh: "Nữ",
-    cccd: "012345678904",
-    hoKhauId: "1",
-    quanHe: "Con",
-  },
-  {
-    id: "5",
-    maNhanKhau: "NK005",
-    hoTen: "Trần Thị B",
-    ngaySinh: "1975-11-30",
-    gioiTinh: "Nữ",
-    cccd: "012345678905",
-    hoKhauId: "2",
-    quanHe: "Chủ hộ",
-  },
-]
+import { apiClient } from "@/lib/api-client"
+import { ADD_NHANKHAU_ROUTE, GET_ALL_NHANKHAU_ROUTE, DELETE_NHANKHAU_ROUTE } from "@/utils/constant"
 
 export function NhanKhauPage() {
-  const [nhanKhauList] = useState<NhanKhau[]>(mockNhanKhau)
+  const [nhanKhauList, setNhanKhauList] = useState<NhanKhau[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [newNhanKhau, setNewNhanKhau] = useState<Partial<NhanKhau>>({
@@ -86,6 +34,17 @@ export function NhanKhauPage() {
     gioiTinh: "Nam",
     cccd: "",
   })
+
+  useEffect(() => {
+    const getAllNk = async() => {
+      const response = await apiClient.get(
+        GET_ALL_NHANKHAU_ROUTE,
+        {withCredentials: true}
+      )
+      setNhanKhauList(response.data)
+    }
+    getAllNk()
+  },[])
 
   const filteredNhanKhau = nhanKhauList.filter(
     (nhanKhau) =>
@@ -102,19 +61,48 @@ export function NhanKhauPage() {
     }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // In a real app, you would add the new resident to the database
     console.log("New resident:", newNhanKhau)
     setIsDialogOpen(false)
-    // Reset form
-    setNewNhanKhau({
-      maNhanKhau: "",
-      hoTen: "",
-      ngaySinh: "",
-      gioiTinh: "Nam",
-      cccd: "",
-    })
+    try {
+      const response = await apiClient.post(
+        ADD_NHANKHAU_ROUTE,
+        newNhanKhau,
+        {withCredentials: true}
+      )
+      if (response.status == 201){
+        console.log("Thêm nhân khẩu mới thành công");
+        // Reset form
+        setNewNhanKhau({
+          maNhanKhau: "",
+          hoTen: "",
+          ngaySinh: "",
+          gioiTinh: "Nam",
+          cccd: "",
+        })
+        setNhanKhauList((prev) => [...prev, response.data])
+      }
+      console.log(response)
+    } catch (error){
+      console.log(error);
+    }
+    
+  }
+
+  const handleDelete = async(maNhanKhau : string) => {
+    try { 
+      const response = await apiClient.delete(
+        `${DELETE_NHANKHAU_ROUTE}/${maNhanKhau}`,
+        {withCredentials: true}
+      )
+      if (response.status == 200){
+        console.log("Xóa nhân khẩu thành công");
+        setNhanKhauList((prev) => prev.filter((nhanKhau) => nhanKhau.maNhanKhau !== maNhanKhau));
+      } 
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   return (
@@ -240,7 +228,7 @@ export function NhanKhauPage() {
           <TableBody>
             {filteredNhanKhau.length > 0 ? (
               filteredNhanKhau.map((nhanKhau) => (
-                <TableRow key={nhanKhau.id}>
+                <TableRow key={nhanKhau.maNhanKhau}>
                   <TableCell className="font-medium">{nhanKhau.maNhanKhau}</TableCell>
                   <TableCell>{nhanKhau.hoTen}</TableCell>
                   <TableCell>{new Date(nhanKhau.ngaySinh).toLocaleDateString("vi-VN")}</TableCell>
@@ -265,10 +253,15 @@ export function NhanKhauPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem asChild>
-                          <Link to={`/nhan-khau/${nhanKhau.id}`}>Xem chi tiết</Link>
+                          <Link to={`/nhan-khau/${nhanKhau.maNhanKhau}`}>Xem chi tiết</Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem>Sửa</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">Xóa</DropdownMenuItem>
+                        <DropdownMenuItem 
+                          className="text-destructive"
+                          onClick={() => handleDelete(nhanKhau.maNhanKhau)}
+                        >
+                          Xóa
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

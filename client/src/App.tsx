@@ -30,7 +30,7 @@ function App() {
         }>
           <Route index element={<DashboardPage />} />
           <Route path="/ho-khau" element={<HoKhauPage />} />
-          <Route path="/ho-khau/:id" element={<HoKhauDetailPage />} />
+          <Route path="/ho-khau/:maHoKhau" element={<HoKhauDetailPage />} />
           <Route path="/nhan-khau" element={<NhanKhauPage />} />
           <Route path="/khoan-thu" element={<KhoanThuPage />} />
           <Route path="/thu-phi" element={<ThuPhiPage />} />

@@ -20,7 +20,7 @@ import {
 import { Label } from "@/components/ui/label"
 import { Plus, MoreHorizontal, Search } from 'lucide-react'
 import type { HoKhau } from "@/types"
-import { ADD_HOKHAU_ROUTE, GET_ALL_HOKHAU_ROUTE } from "@/utils/constant"
+import { ADD_HOKHAU_ROUTE, DELETE_HOKHAU_ROUTE, GET_ALL_HOKHAU_ROUTE } from "@/utils/constant"
 import { apiClient } from "@/lib/api-client"
 
 export function HoKhauPage() {
@@ -83,6 +83,23 @@ export function HoKhauPage() {
       } 
       console.log(response);
     } catch(error) {
+      console.log(error);
+    }
+  }
+
+  const handleDelete = async (maHoKhau: string) => {
+    try {
+      const response = await apiClient.delete(
+        `${DELETE_HOKHAU_ROUTE}/${maHoKhau}`,
+        {withCredentials: true},
+      )
+      if (response.status === 200){
+        console.log("Household deleted successfully");
+        // Remove household from list
+        setHoKhauList(hoKhauList.filter((hoKhau) => hoKhau.maHoKhau !== maHoKhau))
+      } 
+      console.log(response);
+    } catch (error) {
       console.log(error);
     }
   }
@@ -228,7 +245,11 @@ export function HoKhauPage() {
                           <Link to={`/ho-khau/${hoKhau.maHoKhau}`}>Xem chi tiết</Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem>Sửa</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">Xóa</DropdownMenuItem>
+                        <DropdownMenuItem 
+                          className="text-destructive"
+                          onClick={() => handleDelete(hoKhau.maHoKhau)}
+                          >Xóa
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

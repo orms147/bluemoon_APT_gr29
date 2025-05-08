@@ -21,12 +21,11 @@ const NhanKhauSchema = new mongoose.Schema({
     },
     cccd: {
         type: String,
-        // required: true
+        required: true
     },
     hoKhauId: {
         type: String,
         ref: "HoKhau",
-        // required: true
     },
     tonGiao: {
         type: String,
