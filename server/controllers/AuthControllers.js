@@ -56,3 +56,13 @@ export const logout = async (req, res, next) => {
         res.status(500).json({message: 'Server bị lỗi'});
     }
 }
+
+export const getUserInfo = async (req, res, next) => {
+    try {
+        const userData = await User.findById({_id: req.userId})
+        res.status(200).json(userData);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({message: 'Server bị lỗi'});
+    }
+}

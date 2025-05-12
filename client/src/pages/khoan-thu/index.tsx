@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -19,6 +19,8 @@ import {
 import { Label } from "@/components/ui/label"
 import { Plus, MoreHorizontal, Search } from 'lucide-react'
 import type { KhoanThu } from "@/types"
+import { apiClient } from '@/lib/api-client'
+import { GET_ALL_KHOANTHU_ROUTE, ADD_KHOANTHU_ROUTE, DELETE_KHOANTHU_ROUTE } from '@/utils/constant'
 
 // Mock data
 const mockKhoanThu: KhoanThu[] = [
@@ -69,7 +71,7 @@ const mockKhoanThu: KhoanThu[] = [
 ]
 
 export function KhoanThuPage() {
-  const [khoanThuList] = useState<KhoanThu[]>(mockKhoanThu)
+  const [khoanThuList, setKhoanThuList] = useState<KhoanThu[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [newKhoanThu, setNewKhoanThu] = useState<Partial<KhoanThu>>({
@@ -80,6 +82,18 @@ export function KhoanThuPage() {
     ngayTao: new Date().toISOString().split("T")[0],
     ghiChu: "",
   })
+
+  useEffect(() => {
+    const getListKhoanThu = async () => {
+      const response = await apiClient.get(
+        GET_ALL_KHOANTHU_ROUTE,
+        {withCrediental: true},
+      );
+      setKhoanThuList(response.data)
+    }
+
+    getListKhoanThu()
+  },[])
 
   const filteredKhoanThu = khoanThuList.filter(
     (khoanThu) =>
@@ -95,20 +109,47 @@ export function KhoanThuPage() {
     }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // In a real app, you would add the new fee to the database
     console.log("New fee:", newKhoanThu)
     setIsDialogOpen(false)
-    // Reset form
-    setNewKhoanThu({
-      maKhoanThu: "",
-      tenKhoanThu: "",
-      loai: "Bắt buộc",
-      soTien: 0,
-      ngayTao: new Date().toISOString().split("T")[0],
-      ghiChu: "",
-    })
+    
+    try {
+      const response = await apiClient.post(
+        ADD_KHOANTHU_ROUTE,
+        newKhoanThu,
+        {withCredentials: true}
+      )
+      if (response.status === 201){
+        setNewKhoanThu({
+          maKhoanThu: "",
+          tenKhoanThu: "",
+          loai: "Bắt buộc",
+          soTien: 0,
+          ngayTao: new Date().toISOString().split("T")[0],
+          ghiChu: "",
+        })
+        setKhoanThuList([...khoanThuList, response.data])
+      }
+      console.log(response)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const handleDelete = async(maKhoanThu : string) => {
+    try {
+      const response = await apiClient.delete(
+        `${DELETE_KHOANTHU_ROUTE}/${maKhoanThu}`,
+        {withCredentials: true}
+      );
+      if (response.status === 200){
+        console.log("Xóa khoản thu thành công")
+        setKhoanThuList(khoanThuList.filter((khoanThu) => khoanThu.maKhoanThu != maKhoanThu))
+      }
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   return (
@@ -246,7 +287,7 @@ export function KhoanThuPage() {
           <TableBody>
             {filteredKhoanThu.length > 0 ? (
               filteredKhoanThu.map((khoanThu) => (
-                <TableRow key={khoanThu.id}>
+                <TableRow key={khoanThu.maKhoanThu}>
                   <TableCell className="font-medium">{khoanThu.maKhoanThu}</TableCell>
                   <TableCell>{khoanThu.tenKhoanThu}</TableCell>
                   <TableCell>{khoanThu.loai}</TableCell>
@@ -265,7 +306,12 @@ export function KhoanThuPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem>Sửa</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">Xóa</DropdownMenuItem>
+                        <DropdownMenuItem 
+                          className="text-destructive" 
+                          onClick={() => handleDelete(khoanThu.maKhoanThu)}
+                        >
+                          Xóa
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

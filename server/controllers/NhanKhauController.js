@@ -4,7 +4,6 @@ export const getAllNk = async (req, res, next) => {
     try {
         const nks = await NhanKhau.find();
         res.status(200).json(nks);
-        console.log(res)
     } catch (error){
         console.log(error);
         res.status(500).json({

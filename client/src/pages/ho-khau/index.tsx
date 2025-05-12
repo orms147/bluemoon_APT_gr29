@@ -94,8 +94,7 @@ export function HoKhauPage() {
         {withCredentials: true},
       )
       if (response.status === 200){
-        console.log("Household deleted successfully");
-        // Remove household from list
+        console.log("Xóa hộ khẩu thành côngcông");
         setHoKhauList(hoKhauList.filter((hoKhau) => hoKhau.maHoKhau !== maHoKhau))
       } 
       console.log(response);
