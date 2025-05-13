@@ -6,7 +6,8 @@ import mongoose from 'mongoose';
 import authRoutes from './routes/AuthRoutes.js';
 import hoKhauRoutes from './routes/HoKhauRoutes.js';
 import nhanKhauRoutes from './routes/NhanKhauRoutes.js';
-import khoanThuRoutes from './routes/KhoanThuRoutes.js'
+import khoanThuRoutes from './routes/KhoanThuRoutes.js';
+import phieuNopRoutes from './routes/PhieuNopRoutes.js';
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/ho-khau', hoKhauRoutes);
 app.use('/api/nhan-khau', nhanKhauRoutes);
 app.use('/api/khoan-thu', khoanThuRoutes);
+app.use('/api/phieu-nop', phieuNopRoutes);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

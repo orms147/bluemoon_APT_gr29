@@ -1,17 +1,17 @@
 import mongoose from "mongoose";
 
-const PhieuNopTienSchema = new mongoose.Schema({
+const PhieuNopSchema = new mongoose.Schema({
     maPhieu: {
         type: String,
         required: true,
         unique: true
     },
-    khoanThuId: {
+    maKhoanThu: {
         type: String, 
         ref: 'KhoanThu',
         required: true, 
     },
-    hoKhauId: {
+    maHoKhau: {
         type: String,
         ref: 'HoKhau',
         required: true, 
@@ -30,7 +30,7 @@ const PhieuNopTienSchema = new mongoose.Schema({
         default: Date.now,
     },
     nguoiThu: {
-        type: Date,
+        type: String,
         required: true,
     },
     ghiChu: {
@@ -38,6 +38,6 @@ const PhieuNopTienSchema = new mongoose.Schema({
     }
 });
 
-const PhieuNopTien = mongoose.model("PhieuNopTien", PhieuNopTienSchema);
+const PhieuNop = mongoose.model("PhieuNop", PhieuNopSchema);
 
-export default PhieuNopTien;
+export default PhieuNop;

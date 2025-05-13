@@ -22,3 +22,9 @@ export const GET_ALL_KHOANTHU_ROUTE = `${KHOANTHU_ROUTES}/danh-sach-khoan-thu`;
 export const ADD_KHOANTHU_ROUTE = `${KHOANTHU_ROUTES}/them-khoan-thu`;
 export const PUT_KHOANTHU_ROUTE = `${KHOANTHU_ROUTES}/cap-nhat-khoan-thu`;
 export const DELETE_KHOANTHU_ROUTE = `${KHOANTHU_ROUTES}/xoa-khoan-thu`;
+
+export const PHIEUNOP_ROUTES = "api/phieu-nop";
+export const GET_ALL_PHIEUNOP_ROUTE = `${PHIEUNOP_ROUTES}/danh-sach-phieu-nop`;
+export const ADD_PHIEUNOP_ROUTE = `${PHIEUNOP_ROUTES}/them-phieu-nop`;
+export const PUT_PHIEUNOP_ROUTE = `${PHIEUNOP_ROUTES}/cap-nhat-phieu-nop`;
+export const DELETE_PHIEUNOP_ROUTE = `${PHIEUNOP_ROUTES}/xoa-phieu-nop`;

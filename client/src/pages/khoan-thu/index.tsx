@@ -22,54 +22,6 @@ import type { KhoanThu } from "@/types"
 import { apiClient } from '@/lib/api-client'
 import { GET_ALL_KHOANTHU_ROUTE, ADD_KHOANTHU_ROUTE, DELETE_KHOANTHU_ROUTE } from '@/utils/constant'
 
-// Mock data
-const mockKhoanThu: KhoanThu[] = [
-  {
-    id: "1",
-    maKhoanThu: "KT001",
-    tenKhoanThu: "Phí dịch vụ chung cư",
-    loai: "Bắt buộc",
-    soTien: 700000,
-    ngayTao: "2023-01-01",
-    ghiChu: "Thu hàng tháng",
-  },
-  {
-    id: "2",
-    maKhoanThu: "KT002",
-    tenKhoanThu: "Phí gửi xe máy",
-    loai: "Bắt buộc",
-    soTien: 100000,
-    ngayTao: "2023-01-01",
-    ghiChu: "Thu hàng tháng",
-  },
-  {
-    id: "3",
-    maKhoanThu: "KT003",
-    tenKhoanThu: "Phí gửi ô tô",
-    loai: "Bắt buộc",
-    soTien: 1200000,
-    ngayTao: "2023-01-01",
-    ghiChu: "Thu hàng tháng",
-  },
-  {
-    id: "4",
-    maKhoanThu: "KT004",
-    tenKhoanThu: "Quỹ bảo trì",
-    loai: "Bắt buộc",
-    soTien: 20000,
-    ngayTao: "2023-01-01",
-    ghiChu: "Thu hàng tháng",
-  },
-  {
-    id: "5",
-    maKhoanThu: "KT005",
-    tenKhoanThu: "Quỹ từ thiện",
-    loai: "Tự nguyện",
-    ngayTao: "2023-03-15",
-    ghiChu: "Tùy tâm",
-  },
-]
-
 export function KhoanThuPage() {
   const [khoanThuList, setKhoanThuList] = useState<KhoanThu[]>([])
   const [searchTerm, setSearchTerm] = useState("")

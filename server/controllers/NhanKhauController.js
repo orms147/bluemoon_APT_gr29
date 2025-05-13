@@ -38,7 +38,7 @@ export const updateNk = async (req, res, next) => {
 
 export const deleteNk = async (req, res, next) => {
     try {
-        await NhanKhau.findOneAndDelete({maNhanKhau: req.params.maNhanKhau})
+        await NhanKhau.findOneAndDelete({maNhanKhau: req.params.maNhanKhau});
         res.status(200).json({
             message: 'Xóa thành công'
         });
