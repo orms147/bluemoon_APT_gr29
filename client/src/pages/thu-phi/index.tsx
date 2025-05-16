@@ -40,38 +40,31 @@ export function ThuPhiPage() {
   })
 
   useEffect(() => {
-    const getListHoKhau = async() => {
-      const response = await apiClient.get(
-        GET_ALL_HOKHAU_ROUTE,
-        {withCredentials: true}
-      )
-      setHoKhauList(response.data)
+    const fetchData = async () => {
+      try {
+        const [hoKhauRes, khoanThuRes, phieuNopRes] = await Promise.all([
+          apiClient.get(GET_ALL_HOKHAU_ROUTE, { withCredentials: true }),
+          apiClient.get(GET_ALL_KHOANTHU_ROUTE, { withCredentials: true }),
+          apiClient.get(GET_ALL_PHIEUNOP_ROUTE, { withCredentials: true }),
+        ])
+        setHoKhauList(hoKhauRes.data)
+        setKhoanThuList(khoanThuRes.data)
+        setPhieuNopTienList(phieuNopRes.data)
+      } catch (error) {
+        console.log("Lỗi khi fetch dữ liệu:", error)
+      }
     }
-    const getListKhoanThu = async() => {
-      const response = await apiClient.get(
-        GET_ALL_KHOANTHU_ROUTE,
-        {withCredentials: true}
-      )
-      setKhoanThuList(response.data)
-    }
-    const getListPhieuNop = async() => {
-      const response = await apiClient.get(
-        GET_ALL_PHIEUNOP_ROUTE,
-        {withCredentials: true}
-      )
-      setPhieuNopTienList(response.data)
-    }
-    getListHoKhau()
-    getListKhoanThu()
-    getListPhieuNop()
-  },[])
+
+    fetchData()
+  }, [])
 
   const filteredPhieuNopTien = phieuNopTienList.filter(
     (phieu) =>
       phieu.maPhieu.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (hoKhauList[phieu.maHoKhau]?.tenChuHo || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (khoanThuList[phieu.maKhoanThu]?.tenKhoanThu || "").toLowerCase().includes(searchTerm.toLowerCase()),
+      (hoKhauList.find(hk => hk.maHoKhau === phieu.maHoKhau)?.tenChuHo || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (khoanThuList.find(kt => kt.maKhoanThu === phieu.maKhoanThu)?.tenKhoanThu || "").toLowerCase().includes(searchTerm.toLowerCase())
   )
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target

@@ -1,6 +1,7 @@
 import User from '../models/UserModel.js';
 import jwt from 'jsonwebtoken';
 import {compare} from 'bcrypt';
+import { Types } from 'mongoose';
 
 const maxAge = 3 * 24 * 60 * 60 * 1000; 
 
@@ -59,7 +60,10 @@ export const logout = async (req, res, next) => {
 
 export const getUserInfo = async (req, res, next) => {
     try {
-        const userData = await User.findById({_id: req.userId})
+        if (!Types.ObjectId.isValid(req.userId)) {
+            return res.status(400).json({ error: 'Invalid user ID' });
+        }
+        const userData = await User.findById(req.userId)
         res.status(200).json(userData);
     } catch (error) {
         console.log(error);

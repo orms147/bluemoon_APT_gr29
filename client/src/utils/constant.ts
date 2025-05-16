@@ -28,3 +28,9 @@ export const GET_ALL_PHIEUNOP_ROUTE = `${PHIEUNOP_ROUTES}/danh-sach-phieu-nop`;
 export const ADD_PHIEUNOP_ROUTE = `${PHIEUNOP_ROUTES}/them-phieu-nop`;
 export const PUT_PHIEUNOP_ROUTE = `${PHIEUNOP_ROUTES}/cap-nhat-phieu-nop`;
 export const DELETE_PHIEUNOP_ROUTE = `${PHIEUNOP_ROUTES}/xoa-phieu-nop`;
+
+export const TTTV_ROUTES = "api/tam-tru-tam-vang";
+export const GET_ALL_TTTV_ROUTE = `${TTTV_ROUTES}/danh-sach-tam-tru-tam-vang`;
+export const ADD_TTTV_ROUTE = `${TTTV_ROUTES}/them-tam-tru-tam-vang`;
+export const PUT_TTTV_ROUTE = `${TTTV_ROUTES}/cap-nhat-tam-tru-tam-vang`;
+export const DELETE_TTTV_ROUTE = `${TTTV_ROUTES}/xoa-tam-tru-tam-vang`;

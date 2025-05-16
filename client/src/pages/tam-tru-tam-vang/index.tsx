@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -19,87 +19,12 @@ import {
 import { Label } from "@/components/ui/label"
 import { Plus, MoreHorizontal, Search } from 'lucide-react'
 import type { TamTruTamVang, NhanKhau } from "@/types"
-
-// Mock data
-const mockTamTruTamVang: TamTruTamVang[] = [
-  {
-    id: "1",
-    maDangKy: "TT001",
-    nhanKhauId: "2",
-    loai: "Tạm vắng",
-    tuNgay: "2023-05-01",
-    denNgay: "2023-06-30",
-    diaChi: "Hà Nội",
-    lyDo: "Công tác",
-  },
-  {
-    id: "2",
-    maDangKy: "TT002",
-    nhanKhauId: "5",
-    loai: "Tạm trú",
-    tuNgay: "2023-04-15",
-    denNgay: "2023-07-15",
-    diaChi: "P.1201, Tòa A, BlueMoon",
-    lyDo: "Thăm người thân",
-  },
-  {
-    id: "3",
-    maDangKy: "TT003",
-    nhanKhauId: "3",
-    loai: "Tạm vắng",
-    tuNgay: "2023-06-01",
-    denNgay: "2023-09-01",
-    diaChi: "Đà Nẵng",
-    lyDo: "Du học",
-  },
-]
-
-// Mock data for NhanKhau
-const mockNhanKhau: Record<string, NhanKhau> = {
-  "1": {
-    id: "1",
-    maNhanKhau: "NK001",
-    hoTen: "Nguyễn Văn A",
-    ngaySinh: "1980-05-15",
-    gioiTinh: "Nam",
-    cccd: "012345678901",
-    hoKhauId: "1",
-    quanHe: "Chủ hộ",
-  },
-  "2": {
-    id: "2",
-    maNhanKhau: "NK002",
-    hoTen: "Nguyễn Thị X",
-    ngaySinh: "1985-08-20",
-    gioiTinh: "Nữ",
-    cccd: "012345678902",
-    hoKhauId: "1",
-    quanHe: "Vợ",
-  },
-  "3": {
-    id: "3",
-    maNhanKhau: "NK003",
-    hoTen: "Nguyễn Văn Y",
-    ngaySinh: "2010-03-10",
-    gioiTinh: "Nam",
-    cccd: "012345678903",
-    hoKhauId: "1",
-    quanHe: "Con",
-  },
-  "5": {
-    id: "5",
-    maNhanKhau: "NK005",
-    hoTen: "Trần Thị B",
-    ngaySinh: "1975-11-30",
-    gioiTinh: "Nữ",
-    cccd: "012345678905",
-    hoKhauId: "2",
-    quanHe: "Chủ hộ",
-  },
-}
+import { GET_ALL_TTTV_ROUTE, GET_ALL_NHANKHAU_ROUTE, ADD_TTTV_ROUTE, DELETE_TTTV_ROUTE } from '@/utils/constant'
+import { apiClient } from '@/lib/api-client' 
 
 export function TamTruTamVangPage() {
-  const [tamTruTamVangList] = useState<TamTruTamVang[]>(mockTamTruTamVang)
+  const [tamTruTamVangList,setTamTruTamVangList] = useState<TamTruTamVang[]>([])
+  const [nhanKhauList, setNhanKhauList] = useState<NhanKhau[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [newTamTruTamVang, setNewTamTruTamVang] = useState<Partial<TamTruTamVang>>({
@@ -112,10 +37,27 @@ export function TamTruTamVangPage() {
     lyDo: "",
   })
 
+  useEffect(() => {
+    const fetchData = async() => {
+      try {
+        const [getListNhanKhau, getListTttv] = await Promise.all([
+          apiClient.get(GET_ALL_NHANKHAU_ROUTE, {withCredentials: true}),
+          apiClient.get(GET_ALL_TTTV_ROUTE, {withCredentials: true}),
+        ])
+        setNhanKhauList(getListNhanKhau.data)
+        setTamTruTamVangList(getListTttv.data)
+      } catch (error){
+        console.log("Lỗi khi fetch data: ", error) 
+      }
+    }
+
+    fetchData()
+  }, [])
+
   const filteredTamTruTamVang = tamTruTamVangList.filter(
     (tamTruTamVang) =>
       tamTruTamVang.maDangKy.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (mockNhanKhau[tamTruTamVang.nhanKhauId]?.hoTen || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (nhanKhauList.find(nhanKhau => nhanKhau.maNhanKhau === tamTruTamVang.nhanKhauId)?.hoTen || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       tamTruTamVang.diaChi.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
@@ -127,21 +69,48 @@ export function TamTruTamVangPage() {
     }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // In a real app, you would add the new record to the database
-    console.log("New temporary residence/absence:", newTamTruTamVang)
     setIsDialogOpen(false)
     // Reset form
-    setNewTamTruTamVang({
-      maDangKy: "",
-      nhanKhauId: "",
-      loai: "Tạm trú",
-      tuNgay: new Date().toISOString().split("T")[0],
-      denNgay: "",
-      diaChi: "",
-      lyDo: "",
-    })
+    try {
+      const response = await apiClient.post(
+        ADD_TTTV_ROUTE,
+        newTamTruTamVang,
+        {withCredentials: true}
+      )
+      if (response.status === 201){
+        console.log(response.data)
+        setTamTruTamVangList([...tamTruTamVangList, response.data])
+        setNewTamTruTamVang({
+          maDangKy: "",
+          nhanKhauId: "",
+          loai: "Tạm trú",
+          tuNgay: new Date().toISOString().split("T")[0],
+          denNgay: "",
+          diaChi: "",
+          lyDo: "",
+        })
+      }
+    } catch (error) {
+      console.log(error);
+    }
+    
+  }
+
+  const handleDelete = async (maDangKy: string) => {
+    try {
+      const response = await apiClient.delete(
+        `${DELETE_TTTV_ROUTE}/${maDangKy}`,
+        {withCredentials: true}
+      )
+      if (response.status === 200){
+        setTamTruTamVangList(tamTruTamVangList.filter((tttv) => tttv.maDangKy !== maDangKy))
+        console.log("Xóa phiếu đăng ký thành công")
+      }
+    } catch (error){
+      console.log(error);
+    }
   }
 
   return (
@@ -188,8 +157,8 @@ export function TamTruTamVangPage() {
                     required
                   >
                     <option value="">Chọn nhân khẩu</option>
-                    {Object.values(mockNhanKhau).map((nhanKhau) => (
-                      <option key={nhanKhau.id} value={nhanKhau.id}>
+                    {Object.values(nhanKhauList).map((nhanKhau) => (
+                      <option key={nhanKhau.maNhanKhau} value={nhanKhau.maNhanKhau}>
                         {nhanKhau.hoTen} - {nhanKhau.maNhanKhau}
                       </option>
                     ))}
@@ -301,9 +270,9 @@ export function TamTruTamVangPage() {
           <TableBody>
             {filteredTamTruTamVang.length > 0 ? (
               filteredTamTruTamVang.map((tamTruTamVang) => (
-                <TableRow key={tamTruTamVang.id}>
+                <TableRow key={tamTruTamVang.maDangKy}>
                   <TableCell className="font-medium">{tamTruTamVang.maDangKy}</TableCell>
-                  <TableCell>{mockNhanKhau[tamTruTamVang.nhanKhauId]?.hoTen || "N/A"}</TableCell>
+                  <TableCell>{nhanKhauList.find(nhanKhau => nhanKhau.maNhanKhau == tamTruTamVang.nhanKhauId)?.hoTen || "N/A"}</TableCell>
                   <TableCell>{tamTruTamVang.loai}</TableCell>
                   <TableCell>{new Date(tamTruTamVang.tuNgay).toLocaleDateString("vi-VN")}</TableCell>
                   <TableCell>{new Date(tamTruTamVang.denNgay).toLocaleDateString("vi-VN")}</TableCell>
@@ -320,7 +289,12 @@ export function TamTruTamVangPage() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem>Xem chi tiết</DropdownMenuItem>
                         <DropdownMenuItem>Sửa</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">Xóa</DropdownMenuItem>
+                        <DropdownMenuItem 
+                          className="text-destructive"
+                          onClick = {() => handleDelete(tamTruTamVang.maDangKy)}
+                        >
+                          Xóa
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

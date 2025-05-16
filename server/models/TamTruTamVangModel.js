@@ -1,14 +1,10 @@
 import mongoose from "mongoose";
 
 const TamTruTamVangSchema = new mongoose.Schema({
-    id: { 
-        type: String, 
-        required: true, 
-        unique: true 
-    },
     maDangKy: {
         type: String, 
-        required: true 
+        required: true, 
+        unique: true,
     },
     nhanKhauId: {
         type: String,
