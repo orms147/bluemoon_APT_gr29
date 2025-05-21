@@ -69,6 +69,14 @@ export interface User {
     lyDo: string
   }
 
+  export interface Activity {
+    id: string,
+    model: string,
+    action: string,
+    title: string,
+    content: string,
+    timestamp: string
+  }
 
 
 

@@ -9,6 +9,7 @@ import nhanKhauRoutes from './routes/NhanKhauRoutes.js';
 import khoanThuRoutes from './routes/KhoanThuRoutes.js';
 import phieuNopRoutes from './routes/PhieuNopRoutes.js';
 import tttvRoutes from './routes/TamTruTamVangRoutes.js';
+import activityRoutes from './routes/ActivityLogRoutes.js';
 
 dotenv.config();
 
@@ -33,6 +34,7 @@ app.use('/api/nhan-khau', nhanKhauRoutes);
 app.use('/api/khoan-thu', khoanThuRoutes);
 app.use('/api/phieu-nop', phieuNopRoutes);
 app.use('/api/tam-tru-tam-vang', tttvRoutes);
+app.use('/api/activity', activityRoutes);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

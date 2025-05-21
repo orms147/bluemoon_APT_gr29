@@ -34,3 +34,6 @@ export const GET_ALL_TTTV_ROUTE = `${TTTV_ROUTES}/danh-sach-tam-tru-tam-vang`;
 export const ADD_TTTV_ROUTE = `${TTTV_ROUTES}/them-tam-tru-tam-vang`;
 export const PUT_TTTV_ROUTE = `${TTTV_ROUTES}/cap-nhat-tam-tru-tam-vang`;
 export const DELETE_TTTV_ROUTE = `${TTTV_ROUTES}/xoa-tam-tru-tam-vang`;
+
+export const ACTIVITY_ROUTES = "api/activity";
+export const GET_RECENT_ACTIVITY_ROUTE = `${ACTIVITY_ROUTES}/recent`;

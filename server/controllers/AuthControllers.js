@@ -58,15 +58,13 @@ export const logout = async (req, res, next) => {
     }
 }
 
-export const getUserInfo = async (req, res, next) => {
-    try {
-        if (!Types.ObjectId.isValid(req.userId)) {
-            return res.status(400).json({ error: 'Invalid user ID' });
-        }
-        const userData = await User.findById(req.userId)
-        res.status(200).json(userData);
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({message: 'Server bị lỗi'});
-    }
-}
+export const getUserInfo = async (req, res) => {
+  const userId = req.user?.id; // req.user có tồn tại chưa?
+
+  if (!userId) {
+    return res.status(400).json({ message: "User not authenticated." });
+  }
+
+  const user = await User.findById(userId);
+  res.json(user);
+};

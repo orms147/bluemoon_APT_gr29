@@ -94,10 +94,9 @@ export function HoKhauPage() {
         {withCredentials: true},
       )
       if (response.status === 200){
-        console.log("Xóa hộ khẩu thành côngcông");
+        console.log("Xóa hộ khẩu thành công");
         setHoKhauList(hoKhauList.filter((hoKhau) => hoKhau.maHoKhau !== maHoKhau))
       } 
-      console.log(response);
     } catch (error) {
       console.log(error);
     }

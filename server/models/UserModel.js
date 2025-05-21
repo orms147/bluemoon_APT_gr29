@@ -30,7 +30,7 @@ userSchema.pre('save', async function(next){
     const salt = await genSalt(10);
     this.password = await hash(this.password, salt);
     next();
-});
+}, );
 
 const User = mongoose.model("Users", userSchema);
 
