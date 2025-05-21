@@ -263,9 +263,9 @@ export function NhanKhauPage() {
                           <span className="sr-only">Mở menu</span>
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="bg-white shadow-lg rounded-md !bg-opacity-100">
+                      <DropdownMenuContent align="end">
                         <DropdownMenuItem asChild>
-                          
+                          <Link to={`/nhan-khau/${nhanKhau.id}`}>Xem chi tiết</Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem>Sửa</DropdownMenuItem>
                         <DropdownMenuItem className="text-destructive">Xóa</DropdownMenuItem>

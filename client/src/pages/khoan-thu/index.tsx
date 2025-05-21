@@ -263,8 +263,7 @@ export function KhoanThuPage() {
                           <span className="sr-only">Mở menu</span>
                         </Button>
                       </DropdownMenuTrigger>
-                    
-                      <DropdownMenuContent align="end" className="bg-white shadow-lg rounded-md !bg-opacity-100">
+                      <DropdownMenuContent align="end">
                         <DropdownMenuItem>Sửa</DropdownMenuItem>
                         <DropdownMenuItem className="text-destructive">Xóa</DropdownMenuItem>
                       </DropdownMenuContent>

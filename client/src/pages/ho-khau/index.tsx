@@ -180,19 +180,19 @@ export function HoKhauPage() {
                   />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-  <Label htmlFor="ngayLap" className="text-right">
-    Ngày lập
-  </Label>
-  <Input
-    id="ngayLap"
-    name="ngayLap"
-    type="date"
-    value={newHoKhau.ngayLap}
-    onChange={handleInputChange}
-    className="col-span-3"
-    required
-  />
-</div>
+                  <Label htmlFor="ngayLap" className="text-right">
+                    Ngày lập
+                  </Label>
+                  <Input
+                    id="ngayLap"
+                    name="ngayLap"
+                    type="date"
+                    value={newHoKhau.ngayLap}
+                    onChange={handleInputChange}
+                    className="col-span-3"
+                    required
+                  />
+                </div>
               </div>
               <DialogFooter>
                 <Button type="submit">Lưu</Button>
@@ -241,10 +241,11 @@ export function HoKhauPage() {
                           <span className="sr-only">Mở menu</span>
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="bg-white shadow-lg rounded-md !bg-opacity-100">
+                      <DropdownMenuContent align="end">
                         <DropdownMenuItem asChild>
                           <Link to={`/ho-khau/${hoKhau.id}`}>Xem chi tiết</Link>
                         </DropdownMenuItem>
+                        <DropdownMenuItem>Sửa</DropdownMenuItem>
                         <DropdownMenuItem className="text-destructive">Xóa</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

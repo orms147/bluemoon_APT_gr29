@@ -1,6 +1,8 @@
 "use client"
 
-import React, { useState } from "react"
+import type React from "react"
+
+import { useState } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -125,7 +127,7 @@ const mockHoKhau: Record<string, HoKhau> = {
 }
 
 export function ThuPhiPage() {
-  const [phieuNopTienList, setPhieuNopTienList] = useState<PhieuNopTien[]>(mockPhieuNopTien)
+  const [phieuNopTienList] = useState<PhieuNopTien[]>(mockPhieuNopTien)
   const [searchTerm, setSearchTerm] = useState("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [newPhieuNopTien, setNewPhieuNopTien] = useState<Partial<PhieuNopTien>>({
@@ -138,10 +140,6 @@ export function ThuPhiPage() {
     nguoiThu: "Admin",
     ghiChu: "",
   })
-
-  // State cho sửa phiếu
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-  const [editPhieu, setEditPhieu] = useState<PhieuNopTien | null>(null)
 
   const filteredPhieuNopTien = phieuNopTienList.filter(
     (phieu) =>
@@ -161,12 +159,9 @@ export function ThuPhiPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     // In a real app, you would add the new payment to the database
-    const newPhieu: PhieuNopTien = {
-      ...newPhieuNopTien,
-      id: (phieuNopTienList.length + 1).toString(),
-    } as PhieuNopTien
-    setPhieuNopTienList((prev) => [...prev, newPhieu])
+    console.log("New payment:", newPhieuNopTien)
     setIsDialogOpen(false)
+    // Reset form
     setNewPhieuNopTien({
       maPhieu: "",
       khoanThuId: "",
@@ -177,38 +172,6 @@ export function ThuPhiPage() {
       nguoiThu: "Admin",
       ghiChu: "",
     })
-  }
-
-  // Sửa phiếu
-  const handleOpenEdit = (phieu: PhieuNopTien) => {
-    setEditPhieu(phieu)
-    setIsEditDialogOpen(true)
-  }
-
-  const handleDeletePhieu = (id: string) => {
-  setPhieuNopTienList(prev => prev.filter(phieu => phieu.id !== id))
-}
-
-  const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    setEditPhieu((prev) =>
-      prev
-        ? {
-          ...prev,
-          [name]: name === "soTien" ? Number.parseInt(value) : value,
-        }
-        : prev
-    )
-  }
-
-  const handleEditSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (editPhieu) {
-      setPhieuNopTienList((prev) =>
-        prev.map((p) => (p.id === editPhieu.id ? editPhieu : p))
-      )
-      setIsEditDialogOpen(false)
-    }
   }
 
   return (
@@ -324,19 +287,6 @@ export function ThuPhiPage() {
                   />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="nguoiThu" className="text-right">
-                    Người thu
-                  </Label>
-                  <Input
-                    id="nguoiThu"
-                    name="nguoiThu"
-                    value={newPhieuNopTien.nguoiThu}
-                    onChange={handleInputChange}
-                    className="col-span-3"
-                    required
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="ghiChu" className="text-right">
                     Ghi chú
                   </Label>
@@ -400,15 +350,10 @@ export function ThuPhiPage() {
                           <span className="sr-only">Mở menu</span>
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="bg-white shadow-lg rounded-md !bg-opacity-100">
-                        <DropdownMenuItem onClick={() => handleOpenEdit(phieu)}>Sửa</DropdownMenuItem>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem>Xem chi tiết</DropdownMenuItem>
                         <DropdownMenuItem>In phiếu thu</DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="text-destructive"
-                          onClick={() => handleDeletePhieu(phieu.id)}
-                        >
-                          Xóa
-                        </DropdownMenuItem>
+                        <DropdownMenuItem className="text-destructive">Xóa</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -424,142 +369,6 @@ export function ThuPhiPage() {
           </TableBody>
         </Table>
       </div>
-
-      {/* Dialog sửa phiếu nộp tiền */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <form onSubmit={handleEditSubmit}>
-            <DialogHeader>
-              <DialogTitle>Sửa phiếu nộp tiền</DialogTitle>
-              <DialogDescription>Chỉnh sửa thông tin phiếu nộp tiền</DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="maPhieu" className="text-right">
-                  Mã phiếu
-                </Label>
-                <Input
-                  id="maPhieu"
-                  name="maPhieu"
-                  value={editPhieu?.maPhieu || ""}
-                  onChange={handleEditChange}
-                  className="col-span-3"
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="khoanThuId" className="text-right">
-                  Khoản thu
-                </Label>
-                <select
-                  id="khoanThuId"
-                  name="khoanThuId"
-                  value={editPhieu?.khoanThuId || ""}
-                  onChange={handleEditChange}
-                  className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  required
-                >
-                  <option value="">Chọn khoản thu</option>
-                  {Object.values(mockKhoanThu).map((khoanThu) => (
-                    <option key={khoanThu.id} value={khoanThu.id}>
-                      {khoanThu.tenKhoanThu} - {khoanThu.maKhoanThu}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="hoKhauId" className="text-right">
-                  Hộ khẩu
-                </Label>
-                <select
-                  id="hoKhauId"
-                  name="hoKhauId"
-                  value={editPhieu?.hoKhauId || ""}
-                  onChange={handleEditChange}
-                  className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  required
-                >
-                  <option value="">Chọn hộ khẩu</option>
-                  {Object.values(mockHoKhau).map((hoKhau) => (
-                    <option key={hoKhau.id} value={hoKhau.id}>
-                      {hoKhau.tenChuHo} - {hoKhau.maHoKhau}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="nguoiNop" className="text-right">
-                  Người nộp
-                </Label>
-                <Input
-                  id="nguoiNop"
-                  name="nguoiNop"
-                  value={editPhieu?.nguoiNop || ""}
-                  onChange={handleEditChange}
-                  className="col-span-3"
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="soTien" className="text-right">
-                  Số tiền
-                </Label>
-                <Input
-                  id="soTien"
-                  name="soTien"
-                  type="number"
-                  value={editPhieu?.soTien || ""}
-                  onChange={handleEditChange}
-                  className="col-span-3"
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="ngayNop" className="text-right">
-                  Ngày nộp
-                </Label>
-                <Input
-                  id="ngayNop"
-                  name="ngayNop"
-                  type="date"
-                  value={editPhieu?.ngayNop || ""}
-                  onChange={handleEditChange}
-                  className="col-span-3"
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="nguoiThu" className="text-right">
-                  Người thu
-                </Label>
-                <Input
-                  id="nguoiThu"
-                  name="nguoiThu"
-                  value={editPhieu?.nguoiThu || ""}
-                  onChange={handleEditChange}
-                  className="col-span-3"
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="ghiChu" className="text-right">
-                  Ghi chú
-                </Label>
-                <Input
-                  id="ghiChu"
-                  name="ghiChu"
-                  value={editPhieu?.ghiChu || ""}
-                  onChange={handleEditChange}
-                  className="col-span-3"
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button type="submit">Lưu</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }
