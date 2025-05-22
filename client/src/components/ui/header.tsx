@@ -29,14 +29,14 @@ export function Header({ title }: HeaderProps) {
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="rounded-full" aria-label="Tài khoản">
-              <Avatar className="h-8 w-8">
+            <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+              <Avatar>
                 <AvatarImage src="/placeholder-avatar.jpg" alt="Avatar" />
                 <AvatarFallback>QT</AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align="end" className="bg-white">
             <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>Hồ sơ</DropdownMenuItem>
