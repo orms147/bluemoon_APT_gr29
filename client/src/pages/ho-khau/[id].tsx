@@ -20,10 +20,12 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { ChevronLeft, UserPlus, UserMinus } from "lucide-react"
 import type { HoKhau, NhanKhau } from "@/types"
+import { apiClient } from "@/lib/api-client"
+import { GET_HOKHAU_BY_ID_ROUTE } from "@/utils/constant"
 
 // Mock data
 const mockHoKhau: Record<string, HoKhau> = {
-  "1": {
+  "HK001": {
     id: "1",
     maHoKhau: "HK001",
     tenChuHo: "Nguyễn Văn A",
@@ -31,7 +33,7 @@ const mockHoKhau: Record<string, HoKhau> = {
     soThanhVien: 4,
     ngayLap: "2022-01-15",
   },
-  "2": {
+  "HK002": {
     id: "2",
     maHoKhau: "HK002",
     tenChuHo: "Trần Thị B",
@@ -85,7 +87,7 @@ const mockNhanKhau: NhanKhau[] = [
 ]
 
 export function HoKhauDetailPage() {
-  const { id } = useParams<{ id: string }>()
+  const { maHoKhau } = useParams<{ maHoKhau: string }>()
   const [hoKhau, setHoKhau] = useState<HoKhau | null>(null)
   const [nhanKhauList, setNhanKhauList] = useState<NhanKhau[]>([])
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
@@ -94,15 +96,28 @@ export function HoKhauDetailPage() {
   const [quanHe, setQuanHe] = useState<string>("")
 
   useEffect(() => {
-    // In a real app, fetch data from API
-    if (id) {
-      setHoKhau(mockHoKhau[id])
-      setNhanKhauList(mockNhanKhau.filter((nk) => nk.hoKhauId === id))
+    if (!maHoKhau) return 
 
-      // Get available residents (not in any household)
-      setAvailableNhanKhau(mockNhanKhau.filter((nk) => !nk.hoKhauId))
+    const getDetailHk = async() => {
+      try {
+        const response = await apiClient.get(
+          `${GET_HOKHAU_BY_ID_ROUTE}/${maHoKhau}`, 
+          {withCredentials: true}
+        )
+        console.log(response.status)
+        console.log(response.data)
+        if (response.status === 200) {
+          const hk = response.data
+          setHoKhau(hk)
+          setNhanKhauList(mockNhanKhau.filter((nk) => nk.hoKhauId === maHoKhau))
+          setAvailableNhanKhau(mockNhanKhau.filter((nk) => !nk.hoKhauId))
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy chi tiết hộ khẩu: ", error);
+      }
     }
-  }, [id])
+    getDetailHk()
+  }, [maHoKhau])
 
   const handleAddNhanKhau = (e: React.FormEvent) => {
     e.preventDefault()

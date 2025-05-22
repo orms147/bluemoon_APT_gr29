@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -19,121 +19,19 @@ import {
 import { Label } from "@/components/ui/label"
 import { Plus, MoreHorizontal, Search } from 'lucide-react'
 import type { PhieuNopTien, KhoanThu, HoKhau } from "@/types"
-
-// Mock data
-const mockPhieuNopTien: PhieuNopTien[] = [
-  {
-    id: "1",
-    maPhieu: "PT001",
-    khoanThuId: "1",
-    hoKhauId: "1",
-    nguoiNop: "Nguyễn Văn A",
-    soTien: 700000,
-    ngayNop: "2023-01-15",
-    nguoiThu: "Admin",
-    ghiChu: "",
-  },
-  {
-    id: "2",
-    maPhieu: "PT002",
-    khoanThuId: "2",
-    hoKhauId: "1",
-    nguoiNop: "Nguyễn Văn A",
-    soTien: 100000,
-    ngayNop: "2023-01-15",
-    nguoiThu: "Admin",
-    ghiChu: "",
-  },
-  {
-    id: "3",
-    maPhieu: "PT003",
-    khoanThuId: "1",
-    hoKhauId: "2",
-    nguoiNop: "Trần Thị B",
-    soTien: 700000,
-    ngayNop: "2023-01-20",
-    nguoiThu: "Admin",
-    ghiChu: "",
-  },
-  {
-    id: "4",
-    maPhieu: "PT004",
-    khoanThuId: "5",
-    hoKhauId: "3",
-    nguoiNop: "Lê Văn C",
-    soTien: 500000,
-    ngayNop: "2023-03-20",
-    nguoiThu: "Admin",
-    ghiChu: "Đóng góp tự nguyện",
-  },
-]
-
-// Mock data for KhoanThu
-const mockKhoanThu: Record<string, KhoanThu> = {
-  "1": {
-    id: "1",
-    maKhoanThu: "KT001",
-    tenKhoanThu: "Phí dịch vụ chung cư",
-    loai: "Bắt buộc",
-    soTien: 700000,
-    ngayTao: "2023-01-01",
-    ghiChu: "Thu hàng tháng",
-  },
-  "2": {
-    id: "2",
-    maKhoanThu: "KT002",
-    tenKhoanThu: "Phí gửi xe máy",
-    loai: "Bắt buộc",
-    soTien: 100000,
-    ngayTao: "2023-01-01",
-    ghiChu: "Thu hàng tháng",
-  },
-  "5": {
-    id: "5",
-    maKhoanThu: "KT005",
-    tenKhoanThu: "Quỹ từ thiện",
-    loai: "Tự nguyện",
-    ngayTao: "2023-03-15",
-    ghiChu: "Tùy tâm",
-  },
-}
-
-// Mock data for HoKhau
-const mockHoKhau: Record<string, HoKhau> = {
-  "1": {
-    id: "1",
-    maHoKhau: "HK001",
-    tenChuHo: "Nguyễn Văn A",
-    diaChi: "P.1201, Tòa A, BlueMoon",
-    soThanhVien: 4,
-    ngayLap: "2022-01-15",
-  },
-  "2": {
-    id: "2",
-    maHoKhau: "HK002",
-    tenChuHo: "Trần Thị B",
-    diaChi: "P.1502, Tòa B, BlueMoon",
-    soThanhVien: 3,
-    ngayLap: "2022-02-20",
-  },
-  "3": {
-    id: "3",
-    maHoKhau: "HK003",
-    tenChuHo: "Lê Văn C",
-    diaChi: "P.0902, Tòa C, BlueMoon",
-    soThanhVien: 5,
-    ngayLap: "2022-03-10",
-  },
-}
+import { apiClient } from '@/lib/api-client'
+import { GET_ALL_HOKHAU_ROUTE, GET_ALL_KHOANTHU_ROUTE, GET_ALL_PHIEUNOP_ROUTE, ADD_PHIEUNOP_ROUTE, DELETE_PHIEUNOP_ROUTE } from '@/utils/constant'
 
 export function ThuPhiPage() {
-  const [phieuNopTienList] = useState<PhieuNopTien[]>(mockPhieuNopTien)
+  const [hoKhauList, setHoKhauList] = useState<HoKhau[]>([])
+  const [khoanThuList, setKhoanThuList] = useState<KhoanThu[]>([])
+  const [phieuNopTienList,setPhieuNopTienList] = useState<PhieuNopTien[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [newPhieuNopTien, setNewPhieuNopTien] = useState<Partial<PhieuNopTien>>({
     maPhieu: "",
-    khoanThuId: "",
-    hoKhauId: "",
+    maKhoanThu: "",
+    maHoKhau: "",
     nguoiNop: "",
     soTien: 0,
     ngayNop: new Date().toISOString().split("T")[0],
@@ -141,12 +39,32 @@ export function ThuPhiPage() {
     ghiChu: "",
   })
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [hoKhauRes, khoanThuRes, phieuNopRes] = await Promise.all([
+          apiClient.get(GET_ALL_HOKHAU_ROUTE, { withCredentials: true }),
+          apiClient.get(GET_ALL_KHOANTHU_ROUTE, { withCredentials: true }),
+          apiClient.get(GET_ALL_PHIEUNOP_ROUTE, { withCredentials: true }),
+        ])
+        setHoKhauList(hoKhauRes.data)
+        setKhoanThuList(khoanThuRes.data)
+        setPhieuNopTienList(phieuNopRes.data)
+      } catch (error) {
+        console.log("Lỗi khi fetch dữ liệu:", error)
+      }
+    }
+
+    fetchData()
+  }, [])
+
   const filteredPhieuNopTien = phieuNopTienList.filter(
     (phieu) =>
       phieu.maPhieu.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (mockHoKhau[phieu.hoKhauId]?.tenChuHo || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (mockKhoanThu[phieu.khoanThuId]?.tenKhoanThu || "").toLowerCase().includes(searchTerm.toLowerCase()),
+      (hoKhauList.find(hk => hk.maHoKhau === phieu.maHoKhau)?.tenChuHo || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (khoanThuList.find(kt => kt.maKhoanThu === phieu.maKhoanThu)?.tenKhoanThu || "").toLowerCase().includes(searchTerm.toLowerCase())
   )
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -156,22 +74,47 @@ export function ThuPhiPage() {
     }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // In a real app, you would add the new payment to the database
-    console.log("New payment:", newPhieuNopTien)
     setIsDialogOpen(false)
-    // Reset form
-    setNewPhieuNopTien({
-      maPhieu: "",
-      khoanThuId: "",
-      hoKhauId: "",
-      nguoiNop: "",
-      soTien: 0,
-      ngayNop: new Date().toISOString().split("T")[0],
-      nguoiThu: "Admin",
-      ghiChu: "",
-    })
+    try {
+      const response = await apiClient.post(
+        ADD_PHIEUNOP_ROUTE,
+        newPhieuNopTien,
+        {withCredentials: true}
+      )
+      if (response.status === 201){
+        // Reset form
+        setNewPhieuNopTien({
+          maPhieu: "",
+          maKhoanThu: "",
+          maHoKhau: "",
+          nguoiNop: "",
+          soTien: 0,
+          ngayNop: new Date().toISOString().split("T")[0],
+          nguoiThu: "Admin",
+          ghiChu: "",
+        })
+        setPhieuNopTienList([...phieuNopTienList, response.data])
+      }
+    } catch (error) { 
+      console.log(error)
+    }
+  }
+
+  const handleDelete = async (maPhieu: string) => {
+    try {
+      const response = await apiClient.delete(
+        `${DELETE_PHIEUNOP_ROUTE}/${maPhieu}`,
+        {withCredentials: true}
+      )
+      if (response.status == 200){
+        console.log("Xóa nhân khẩu thành công");
+        setPhieuNopTienList((prev) => prev.filter((phieuNop) => phieuNop.maPhieu !== maPhieu));
+      } 
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   return (
@@ -206,40 +149,40 @@ export function ThuPhiPage() {
                   />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="khoanThuId" className="text-right">
+                  <Label htmlFor="maKhoanThu" className="text-right">
                     Khoản thu
                   </Label>
                   <select
-                    id="khoanThuId"
-                    name="khoanThuId"
-                    value={newPhieuNopTien.khoanThuId}
+                    id="maKhoanThu"
+                    name="maKhoanThu"
+                    value={newPhieuNopTien.maKhoanThu}
                     onChange={handleInputChange}
                     className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     required
                   >
                     <option value="">Chọn khoản thu</option>
-                    {Object.values(mockKhoanThu).map((khoanThu) => (
-                      <option key={khoanThu.id} value={khoanThu.id}>
+                    {Object.values(khoanThuList).map((khoanThu) => (
+                      <option key={khoanThu.maKhoanThu} value={khoanThu.maKhoanThu}>
                         {khoanThu.tenKhoanThu} - {khoanThu.maKhoanThu}
                       </option>
                     ))}
                   </select>
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="hoKhauId" className="text-right">
+                  <Label htmlFor="maHoKhau" className="text-right">
                     Hộ khẩu
                   </Label>
                   <select
-                    id="hoKhauId"
-                    name="hoKhauId"
-                    value={newPhieuNopTien.hoKhauId}
+                    id="maHoKhau"
+                    name="maHoKhau"
+                    value={newPhieuNopTien.maHoKhau}
                     onChange={handleInputChange}
                     className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     required
                   >
                     <option value="">Chọn hộ khẩu</option>
-                    {Object.values(mockHoKhau).map((hoKhau) => (
-                      <option key={hoKhau.id} value={hoKhau.id}>
+                    {Object.values(hoKhauList).map((hoKhau) => (
+                      <option key={hoKhau.maHoKhau} value={hoKhau.maHoKhau}>
                         {hoKhau.tenChuHo} - {hoKhau.maHoKhau}
                       </option>
                     ))}
@@ -334,10 +277,10 @@ export function ThuPhiPage() {
           <TableBody>
             {filteredPhieuNopTien.length > 0 ? (
               filteredPhieuNopTien.map((phieu) => (
-                <TableRow key={phieu.id}>
+                <TableRow key={phieu.maPhieu}>
                   <TableCell className="font-medium">{phieu.maPhieu}</TableCell>
-                  <TableCell>{mockKhoanThu[phieu.khoanThuId]?.tenKhoanThu || "N/A"}</TableCell>
-                  <TableCell>{mockHoKhau[phieu.hoKhauId]?.tenChuHo || "N/A"}</TableCell>
+                  <TableCell>{khoanThuList.find(khoanThu => khoanThu.maKhoanThu == phieu.maKhoanThu)?.tenKhoanThu || "N/A"}</TableCell>
+                  <TableCell>{hoKhauList.find(hoKhau => hoKhau.maHoKhau == phieu.maHoKhau)?.tenChuHo || "N/A"}</TableCell>
                   <TableCell>{phieu.nguoiNop}</TableCell>
                   <TableCell>{phieu.soTien.toLocaleString("vi-VN")} VND</TableCell>
                   <TableCell>{new Date(phieu.ngayNop).toLocaleDateString("vi-VN")}</TableCell>
@@ -353,7 +296,12 @@ export function ThuPhiPage() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem>Xem chi tiết</DropdownMenuItem>
                         <DropdownMenuItem>In phiếu thu</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">Xóa</DropdownMenuItem>
+                        <DropdownMenuItem 
+                          className="text-destructive"
+                          onClick={() => handleDelete(phieu.maPhieu)}
+                        >
+                          Xóa
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

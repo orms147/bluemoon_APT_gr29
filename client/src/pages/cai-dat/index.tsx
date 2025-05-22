@@ -219,11 +219,7 @@ export function CaiDatPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Chế độ tối</p>
-                  <p className="text-sm text-muted-foreground">Bật/tắt chế độ tối</p>
-                </div>
-                <Switch />
+               
               </div>
               <div className="flex items-center justify-between">
                 <div>
@@ -232,16 +228,7 @@ export function CaiDatPage() {
                 </div>
                 <Switch defaultChecked />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="language">Ngôn ngữ</Label>
-                <select
-                  id="language"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <option value="vi">Tiếng Việt</option>
-                  <option value="en">English</option>
-                </select>
-              </div>
+
             </CardContent>
             <CardFooter>
               <Button>Lưu thay đổi</Button>

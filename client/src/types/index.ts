@@ -48,8 +48,8 @@ export interface User {
   export interface PhieuNopTien {
     id: string
     maPhieu: string
-    khoanThuId: string
-    hoKhauId: string
+    maKhoanThu: string
+    maHoKhau: string
     nguoiNop: string
     soTien: number
     ngayNop: string
@@ -69,6 +69,14 @@ export interface User {
     lyDo: string
   }
 
+  export interface Activity {
+    id: string,
+    model: string,
+    action: string,
+    title: string,
+    content: string,
+    timestamp: string
+  }
 
 
 

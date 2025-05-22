@@ -1,73 +1,69 @@
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Users, Home, CreditCard, TrendingUp, Plus } from "lucide-react"
+import { Users, Home, CreditCard, TrendingUp } from "lucide-react"
+import { apiClient } from "@/lib/api-client"
+import { GET_ALL_HOKHAU_ROUTE, GET_ALL_NHANKHAU_ROUTE, GET_ALL_KHOANTHU_ROUTE, GET_ALL_PHIEUNOP_ROUTE, GET_RECENT_ACTIVITY_ROUTE } from "@/utils/constant"
+import { HoKhau, NhanKhau, KhoanThu, PhieuNopTien, Activity } from '@/types'
 
 export function DashboardPage() {
+  const [hoKhauList, setHoKhauList] = useState<HoKhau[]>([])
+  const [nhanKhauList, setNhanKhauList] = useState<NhanKhau[]>([])
+  const [khoanThuList, setKhoanThuList] = useState<KhoanThu[]>([])
+  const [phieuNopList, setPhieuNopList] = useState<PhieuNopTien[]>([])
+  const [recentActivities, setRecentActivities] = useState<Activity[]>([])
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [getListHoKhau, getListNhanKhau, getListKhoanThu, getListPhieuNop, getRecentActivities] = await Promise.all([
+          apiClient.get(GET_ALL_HOKHAU_ROUTE, {withCredentials: true}),
+          apiClient.get(GET_ALL_NHANKHAU_ROUTE, {withCredentials: true}),
+          apiClient.get(GET_ALL_KHOANTHU_ROUTE, {withCredentials: true}),
+          apiClient.get(GET_ALL_PHIEUNOP_ROUTE, {withCredentials: true}),
+          apiClient.get(GET_RECENT_ACTIVITY_ROUTE, {withCredentials: true})
+        ])
+        setHoKhauList(getListHoKhau.data)
+        setNhanKhauList(getListNhanKhau.data)
+        setKhoanThuList(getListKhoanThu.data)
+        setPhieuNopList(getListPhieuNop.data)
+        setRecentActivities(getRecentActivities.data)
+      } catch (error) {
+        console.log(error)
+      }
+    }
+
+    fetchData()
+  },[])
+  const tongThu = (phieuNopList.reduce((sum, item) => sum + item.soTien, 0) / 1000000).toString()
   // Mock data for dashboard
   const stats = [
     {
       title: "Tổng số hộ khẩu",
-      value: "124",
+      value: hoKhauList.length,
       description: "Hộ gia đình",
       icon: Home,
       color: "bg-blue-500",
     },
     {
       title: "Tổng số nhân khẩu",
-      value: "432",
+      value: nhanKhauList.length,
       description: "Cư dân",
       icon: Users,
       color: "bg-green-500",
     },
     {
       title: "Khoản thu hiện tại",
-      value: "8",
+      value: khoanThuList.length,
       description: "Đang thu",
       icon: CreditCard,
       color: "bg-orange-500",
     },
     {
       title: "Tổng thu tháng này",
-      value: "42.5M",
+      value: tongThu + 'M',
       description: "VND",
       icon: TrendingUp,
       color: "bg-purple-500",
-    },
-  ]
-
-  // Recent activities
-  const recentActivities = [
-    {
-      id: "1",
-      action: "Nộp phí dịch vụ",
-      user: "Nguyễn Văn A",
-      amount: "1,200,000 VND",
-      time: "Hôm nay, 10:30",
-    },
-    {
-      id: "2",
-      action: "Đăng ký tạm vắng",
-      user: "Trần Thị B",
-      time: "Hôm nay, 09:15",
-    },
-    {
-      id: "3",
-      action: "Thêm hộ khẩu mới",
-      user: "Admin",
-      time: "Hôm qua, 15:45",
-    },
-    {
-      id: "4",
-      action: "Nộp phí gửi xe",
-      user: "Lê Văn C",
-      amount: "200,000 VND",
-      time: "Hôm qua, 14:20",
-    },
-    {
-      id: "5",
-      action: "Cập nhật thông tin nhân khẩu",
-      user: "Admin",
-      time: "Hôm qua, 11:30",
     },
   ]
 
@@ -75,16 +71,6 @@ export function DashboardPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight">Tổng quan</h2>
-        <div className="flex gap-2">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Tạo khoản thu
-          </Button>
-          <Button variant="outline">
-            <Plus className="mr-2 h-4 w-4" />
-            Ghi nhận nộp tiền
-          </Button>
-        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -115,12 +101,17 @@ export function DashboardPage() {
               {recentActivities.map((activity) => (
                 <div key={activity.id} className="flex items-center">
                   <div className="space-y-1">
-                    <p className="text-sm font-medium leading-none">{activity.action}</p>
+                    <p className="text-sm font-medium leading-none">{activity.title}</p>
                     <p className="text-sm text-muted-foreground">
-                      {activity.user} {activity.amount && `- ${activity.amount}`}
+                      {activity.content}
                     </p>
                   </div>
-                  <div className="ml-auto text-sm text-muted-foreground">{activity.time}</div>
+                  <div className="ml-auto text-sm text-muted-foreground">{new Date(activity.timestamp).toLocaleDateString("vi-VN", {
+                                                                                                                                    day: "2-digit",
+                                                                                                                                    month: "2-digit",
+                                                                                                                                    year: "numeric",
+                                                                                                                                  })}
+                  </div>
                 </div>
               ))}
             </div>

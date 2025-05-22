@@ -9,22 +9,48 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Building2 } from "lucide-react"
+import { apiClient } from "@/lib/api-client"
+import { LOGIN_ROUTE } from "@/utils/constant"
+import { useAppStore } from "@/store"
 
 export function LoginPage() {
   const navigate = useNavigate()
+  const {setUserInfo} = useAppStore()
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+  const validateLogin = () => {
+    // Bổ sung để kiểm tra đã điền đầy đủ tài khoản, mật khẩu hay chưachưa
+    return true;
+  }
 
-    // Simulate login process
-    setTimeout(() => {
-      setIsLoading(false)
-      navigate("/")
-    }, 1000)
+  const handleSubmit = async (e: React.FormEvent) => {
+    if (validateLogin()) {
+      e.preventDefault();
+      setIsLoading(true);
+
+      try {
+        const response = await apiClient.post(
+          LOGIN_ROUTE,
+          {username, password},
+          {withCredentials: true}
+        );
+        if (response.data.user.id){
+          setUserInfo(response.data.user)
+          navigate("/")
+        } else {
+          alert("Tài khoản hoặc mật khẩu không đúng")
+        }
+        console.log(response)
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    
   }
 
   return (
@@ -62,7 +88,7 @@ export function LoginPage() {
             </div>
           </CardContent>
           <CardFooter>
-            <Button className="w-full" type="submit" disabled={isLoading}>
+            <Button className="w-full" type="submit" disabled={isLoading} onClick={handleSubmit}>
               {isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
             </Button>
           </CardFooter>
