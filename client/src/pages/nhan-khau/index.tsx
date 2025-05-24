@@ -76,7 +76,7 @@ const mockNhanKhau: NhanKhau[] = [
 ]
 
 export function NhanKhauPage() {
-  const [nhanKhauList] = useState<NhanKhau[]>(mockNhanKhau)
+  const [nhanKhauList, setNhanKhauList] = useState<NhanKhau[]>(mockNhanKhau)
   const [searchTerm, setSearchTerm] = useState("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [newNhanKhau, setNewNhanKhau] = useState<Partial<NhanKhau>>({
@@ -86,6 +86,7 @@ export function NhanKhauPage() {
     gioiTinh: "Nam",
     cccd: "",
   })
+  
 
   const filteredNhanKhau = nhanKhauList.filter(
     (nhanKhau) =>
@@ -100,6 +101,9 @@ export function NhanKhauPage() {
       ...prev,
       [name]: value,
     }))
+  }
+  const handleDeleteNhanKhau = (id: string) => {
+    setNhanKhauList(list => list.filter(nk => nk.id !== id))
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -263,12 +267,14 @@ export function NhanKhauPage() {
                           <span className="sr-only">Mở menu</span>
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem asChild>
-                          <Link to={`/nhan-khau/${nhanKhau.id}`}>Xem chi tiết</Link>
-                        </DropdownMenuItem>
+                      <DropdownMenuContent align="end" className="bg-white shadow-lg rounded-md !bg-opacity-100">
                         <DropdownMenuItem>Sửa</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">Xóa</DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-destructive"
+                          onClick={() => handleDeleteNhanKhau(nhanKhau.id)}
+                        >
+                          Xóa
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

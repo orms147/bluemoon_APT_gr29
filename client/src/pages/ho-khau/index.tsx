@@ -245,7 +245,6 @@ export function HoKhauPage() {
                         <DropdownMenuItem asChild>
                           <Link to={`/ho-khau/${hoKhau.id}`}>Xem chi tiết</Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem>Sửa</DropdownMenuItem>
                         <DropdownMenuItem className="text-destructive">Xóa</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
