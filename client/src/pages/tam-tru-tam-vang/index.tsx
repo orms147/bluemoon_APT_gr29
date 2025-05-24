@@ -27,6 +27,10 @@ export function TamTruTamVangPage() {
   const [nhanKhauList, setNhanKhauList] = useState<NhanKhau[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [detailTamTruTamVang, setDetailTamTruTamVang] = useState<TamTruTamVang | null>(null)
+  const [editTamTruTamVang, setEditTamTruTamVang] = useState<TamTruTamVang | null>(null)
   const [newTamTruTamVang, setNewTamTruTamVang] = useState<Partial<TamTruTamVang>>({
     maDangKy: "",
     nhanKhauId: "",
@@ -67,6 +71,9 @@ export function TamTruTamVangPage() {
       ...prev,
       [name]: value,
     }))
+  }
+  const handleDeleteTamTruTamVang = (id: string) => {
+    setTamTruTamVangList(list => list.filter(item => item.id !== id))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -110,6 +117,35 @@ export function TamTruTamVangPage() {
       }
     } catch (error){
       console.log(error);
+    }
+  }
+
+  // Xem chi tiết
+  const handleOpenDetail = (item: TamTruTamVang) => {
+    setDetailTamTruTamVang(item)
+    setIsDetailDialogOpen(true)
+  }
+
+  // Sửa
+  const handleOpenEdit = (item: TamTruTamVang) => {
+    setEditTamTruTamVang(item)
+    setIsEditDialogOpen(true)
+  }
+
+  const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target
+    setEditTamTruTamVang(prev =>
+      prev ? { ...prev, [name]: value } : prev
+    )
+  }
+
+  const handleEditSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (editTamTruTamVang) {
+      setTamTruTamVangList(list =>
+        list.map(item => item.id === editTamTruTamVang.id ? editTamTruTamVang : item)
+      )
+      setIsEditDialogOpen(false)
     }
   }
 
@@ -287,11 +323,15 @@ export function TamTruTamVangPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>Xem chi tiết</DropdownMenuItem>
-                        <DropdownMenuItem>Sửa</DropdownMenuItem>
-                        <DropdownMenuItem 
+                        <DropdownMenuItem onClick={() => handleOpenDetail(tamTruTamVang)}>
+                          Xem chi tiết
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleOpenEdit(tamTruTamVang)}>
+                          Sửa
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
                           className="text-destructive"
-                          onClick = {() => handleDelete(tamTruTamVang.maDangKy)}
+                          onClick={() => handleDeleteTamTruTamVang(tamTruTamVang.maDangKy)}
                         >
                           Xóa
                         </DropdownMenuItem>
@@ -310,6 +350,121 @@ export function TamTruTamVangPage() {
           </TableBody>
         </Table>
       </div>
+
+      {/* Dialog xem chi tiết */}
+      <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Chi tiết đăng ký tạm trú/tạm vắng</DialogTitle>
+          </DialogHeader>
+          {detailTamTruTamVang && (
+            <div className="space-y-2">
+              <div><b>Mã đăng ký:</b> {detailTamTruTamVang.maDangKy}</div>
+              <div><b>Nhân khẩu:</b> {mockNhanKhau[detailTamTruTamVang.nhanKhauId]?.hoTen || "N/A"}</div>
+              <div><b>Loại:</b> {detailTamTruTamVang.loai}</div>
+              <div><b>Từ ngày:</b> {new Date(detailTamTruTamVang.tuNgay).toLocaleDateString("vi-VN")}</div>
+              <div><b>Đến ngày:</b> {new Date(detailTamTruTamVang.denNgay).toLocaleDateString("vi-VN")}</div>
+              <div><b>Địa chỉ:</b> {detailTamTruTamVang.diaChi}</div>
+              <div><b>Lý do:</b> {detailTamTruTamVang.lyDo}</div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog sửa */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Sửa đăng ký tạm trú/tạm vắng</DialogTitle>
+          </DialogHeader>
+          {editTamTruTamVang && (
+            <form onSubmit={handleEditSubmit}>
+              <div className="grid gap-4 py-4">
+                <div>
+                  <Label>Mã đăng ký</Label>
+                  <Input
+                    name="maDangKy"
+                    value={editTamTruTamVang.maDangKy}
+                    onChange={handleEditChange}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label>Nhân khẩu</Label>
+                  <select
+                    name="nhanKhauId"
+                    value={editTamTruTamVang.nhanKhauId}
+                    onChange={handleEditChange}
+                    required
+                    className="w-full border rounded px-2 py-1"
+                  >
+                    <option value="">Chọn nhân khẩu</option>
+                    {Object.values(mockNhanKhau).map(nk => (
+                      <option key={nk.id} value={nk.id}>
+                        {nk.hoTen} - {nk.maNhanKhau}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <Label>Loại</Label>
+                  <select
+                    name="loai"
+                    value={editTamTruTamVang.loai}
+                    onChange={handleEditChange}
+                    required
+                    className="w-full border rounded px-2 py-1"
+                  >
+                    <option value="Tạm trú">Tạm trú</option>
+                    <option value="Tạm vắng">Tạm vắng</option>
+                  </select>
+                </div>
+                <div>
+                  <Label>Từ ngày</Label>
+                  <Input
+                    type="date"
+                    name="tuNgay"
+                    value={editTamTruTamVang.tuNgay}
+                    onChange={handleEditChange}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label>Đến ngày</Label>
+                  <Input
+                    type="date"
+                    name="denNgay"
+                    value={editTamTruTamVang.denNgay}
+                    onChange={handleEditChange}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label>Địa chỉ</Label>
+                  <Input
+                    name="diaChi"
+                    value={editTamTruTamVang.diaChi}
+                    onChange={handleEditChange}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label>Lý do</Label>
+                  <Input
+                    name="lyDo"
+                    value={editTamTruTamVang.lyDo}
+                    onChange={handleEditChange}
+                    required
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button type="submit">Lưu</Button>
+              </DialogFooter>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

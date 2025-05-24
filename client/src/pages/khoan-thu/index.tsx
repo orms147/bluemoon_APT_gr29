@@ -5,19 +5,8 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Plus, MoreHorizontal, Search } from 'lucide-react'
+import { MoreHorizontal } from "lucide-react"
 import type { KhoanThu } from "@/types"
 import { apiClient } from '@/lib/api-client'
 import { GET_ALL_KHOANTHU_ROUTE, ADD_KHOANTHU_ROUTE, DELETE_KHOANTHU_ROUTE } from '@/utils/constant'
@@ -106,123 +95,7 @@ export function KhoanThuPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">Quản lý Khoản thu</h2>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Thêm khoản thu
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
-            <form onSubmit={handleSubmit}>
-              <DialogHeader>
-                <DialogTitle>Thêm khoản thu mới</DialogTitle>
-                <DialogDescription>Nhập thông tin khoản thu mới vào form bên dưới</DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="maKhoanThu" className="text-right">
-                    Mã khoản thu
-                  </Label>
-                  <Input
-                    id="maKhoanThu"
-                    name="maKhoanThu"
-                    value={newKhoanThu.maKhoanThu}
-                    onChange={handleInputChange}
-                    className="col-span-3"
-                    required
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="tenKhoanThu" className="text-right">
-                    Tên khoản thu
-                  </Label>
-                  <Input
-                    id="tenKhoanThu"
-                    name="tenKhoanThu"
-                    value={newKhoanThu.tenKhoanThu}
-                    onChange={handleInputChange}
-                    className="col-span-3"
-                    required
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="loai" className="text-right">
-                    Loại
-                  </Label>
-                  <select
-                    id="loai"
-                    name="loai"
-                    value={newKhoanThu.loai}
-                    onChange={handleInputChange}
-                    className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    required
-                  >
-                    <option value="Bắt buộc">Bắt buộc</option>
-                    <option value="Tự nguyện">Tự nguyện</option>
-                  </select>
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="soTien" className="text-right">
-                    Số tiền
-                  </Label>
-                  <Input
-                    id="soTien"
-                    name="soTien"
-                    type="number"
-                    value={newKhoanThu.soTien}
-                    onChange={handleInputChange}
-                    className="col-span-3"
-                    disabled={newKhoanThu.loai === "Tự nguyện"}
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="ngayTao" className="text-right">
-                    Ngày tạo
-                  </Label>
-                  <Input
-                    id="ngayTao"
-                    name="ngayTao"
-                    type="date"
-                    value={newKhoanThu.ngayTao}
-                    onChange={handleInputChange}
-                    className="col-span-3"
-                    required
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="ghiChu" className="text-right">
-                    Ghi chú
-                  </Label>
-                  <Input
-                    id="ghiChu"
-                    name="ghiChu"
-                    value={newKhoanThu.ghiChu}
-                    onChange={handleInputChange}
-                    className="col-span-3"
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button type="submit">Lưu</Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <Search className="h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Tìm kiếm theo mã hoặc tên khoản thu..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-sm"
-        />
-      </div>
-
+      <h2 className="text-3xl font-bold tracking-tight">Quản lý Khoản thu</h2>
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -272,7 +145,7 @@ export function KhoanThuPage() {
             ) : (
               <TableRow>
                 <TableCell colSpan={7} className="h-24 text-center">
-                  Không tìm thấy khoản thu nào.
+                  Không có khoản thu nào.
                 </TableCell>
               </TableRow>
             )}

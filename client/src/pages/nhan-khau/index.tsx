@@ -60,6 +60,9 @@ export function NhanKhauPage() {
       [name]: value,
     }))
   }
+  const handleDeleteNhanKhau = (id: string) => {
+    setNhanKhauList(list => list.filter(nk => nk.id !== id))
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -251,14 +254,17 @@ export function NhanKhauPage() {
                           <span className="sr-only">Mở menu</span>
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem asChild>
-                          <Link to={`/nhan-khau/${nhanKhau.maNhanKhau}`}>Xem chi tiết</Link>
-                        </DropdownMenuItem>
+                      <DropdownMenuContent align="end" className="bg-white shadow-lg rounded-md !bg-opacity-100">
                         <DropdownMenuItem>Sửa</DropdownMenuItem>
                         <DropdownMenuItem 
                           className="text-destructive"
                           onClick={() => handleDelete(nhanKhau.maNhanKhau)}
+                        >
+                          Xóa
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-destructive"
+                          onClick={() => handleDeleteNhanKhau(nhanKhau.id)}
                         >
                           Xóa
                         </DropdownMenuItem>

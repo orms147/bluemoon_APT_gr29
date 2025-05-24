@@ -38,6 +38,10 @@ export function ThuPhiPage() {
     nguoiThu: "Admin",
     ghiChu: "",
   })
+  const role = "admin" // hoặc lấy từ context, props, v.v.
+  
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false)
+  const [detailPhieu, setDetailPhieu] = useState<PhieuNopTien | null>(null)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -115,6 +119,11 @@ export function ThuPhiPage() {
     } catch (error) {
       console.log(error)
     }
+  }
+
+  // Xóa phiếu nộp tiền
+  const handleDeletePhieu = (id: string) => {
+    setPhieuNopTienList(list => list.filter(phieu => phieu.id !== id))
   }
 
   return (
@@ -294,7 +303,14 @@ export function ThuPhiPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>Xem chi tiết</DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setDetailPhieu(phieu)
+                            setIsDetailDialogOpen(true)
+                          }}
+                        >
+                          Xem chi tiết
+                        </DropdownMenuItem>
                         <DropdownMenuItem>In phiếu thu</DropdownMenuItem>
                         <DropdownMenuItem 
                           className="text-destructive"
@@ -317,6 +333,161 @@ export function ThuPhiPage() {
           </TableBody>
         </Table>
       </div>
+      <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Chi tiết phiếu nộp tiền</DialogTitle>
+          </DialogHeader>
+          {detailPhieu && (
+            <form
+              onSubmit={e => {
+                e.preventDefault()
+                if (role === "admin") {
+                  setPhieuNopTienList(list =>
+                    list.map(p => p.id === detailPhieu.id ? detailPhieu : p)
+                  )
+                  setIsDetailDialogOpen(false)
+                }
+              }}
+            >
+              <div className="space-y-2">
+                <div>
+                  <b>Mã phiếu:</b>{" "}
+                  {role === "admin" ? (
+                    <Input
+                      value={detailPhieu.maPhieu}
+                      onChange={e =>
+                        setDetailPhieu(phieu => phieu ? { ...phieu, maPhieu: e.target.value } : phieu)
+                      }
+                      required
+                    />
+                  ) : (
+                    detailPhieu.maPhieu
+                  )}
+                </div>
+                <div>
+                  <b>Khoản thu:</b>{" "}
+                  {role === "admin" ? (
+                    <select
+                      value={detailPhieu.khoanThuId}
+                      onChange={e =>
+                        setDetailPhieu(phieu => phieu ? { ...phieu, khoanThuId: e.target.value } : phieu)
+                      }
+                      required
+                      className="border rounded px-2 py-1"
+                    >
+                      {Object.values(mockKhoanThu).map(khoanThu => (
+                        <option key={khoanThu.id} value={khoanThu.id}>
+                          {khoanThu.tenKhoanThu} - {khoanThu.maKhoanThu}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    mockKhoanThu[detailPhieu.khoanThuId]?.tenKhoanThu || "N/A"
+                  )}
+                </div>
+                <div>
+                  <b>Hộ khẩu:</b>{" "}
+                  {role === "admin" ? (
+                    <select
+                      value={detailPhieu.hoKhauId}
+                      onChange={e =>
+                        setDetailPhieu(phieu => phieu ? { ...phieu, hoKhauId: e.target.value } : phieu)
+                      }
+                      required
+                      className="border rounded px-2 py-1"
+                    >
+                      {Object.values(mockHoKhau).map(hoKhau => (
+                        <option key={hoKhau.id} value={hoKhau.id}>
+                          {hoKhau.tenChuHo} - {hoKhau.maHoKhau}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    mockHoKhau[detailPhieu.hoKhauId]?.tenChuHo || "N/A"
+                  )}
+                </div>
+                <div>
+                  <b>Người nộp:</b>{" "}
+                  {role === "admin" ? (
+                    <Input
+                      value={detailPhieu.nguoiNop}
+                      onChange={e =>
+                        setDetailPhieu(phieu => phieu ? { ...phieu, nguoiNop: e.target.value } : phieu)
+                      }
+                      required
+                    />
+                  ) : (
+                    detailPhieu.nguoiNop
+                  )}
+                </div>
+                <div>
+                  <b>Số tiền:</b>{" "}
+                  {role === "admin" ? (
+                    <Input
+                      type="number"
+                      value={detailPhieu.soTien}
+                      onChange={e =>
+                        setDetailPhieu(phieu => phieu ? { ...phieu, soTien: Number(e.target.value) } : phieu)
+                      }
+                      required
+                    />
+                  ) : (
+                    detailPhieu.soTien.toLocaleString("vi-VN") + " VND"
+                  )}
+                </div>
+                <div>
+                  <b>Ngày nộp:</b>{" "}
+                  {role === "admin" ? (
+                    <Input
+                      type="date"
+                      value={detailPhieu.ngayNop}
+                      onChange={e =>
+                        setDetailPhieu(phieu => phieu ? { ...phieu, ngayNop: e.target.value } : phieu)
+                      }
+                      required
+                    />
+                  ) : (
+                    new Date(detailPhieu.ngayNop).toLocaleDateString("vi-VN")
+                  )}
+                </div>
+                <div>
+                  <b>Người thu:</b>{" "}
+                  {role === "admin" ? (
+                    <Input
+                      value={detailPhieu.nguoiThu}
+                      onChange={e =>
+                        setDetailPhieu(phieu => phieu ? { ...phieu, nguoiThu: e.target.value } : phieu)
+                      }
+                      required
+                    />
+                  ) : (
+                    detailPhieu.nguoiThu
+                  )}
+                </div>
+                <div>
+                  <b>Ghi chú:</b>{" "}
+                  {role === "admin" ? (
+                    <Input
+                      value={detailPhieu.ghiChu}
+                      onChange={e =>
+                        setDetailPhieu(phieu => phieu ? { ...phieu, ghiChu: e.target.value } : phieu)
+                      }
+                    />
+                  ) : (
+                    detailPhieu.ghiChu
+                  )}
+                </div>
+              </div>
+              {role === "admin" && (
+                <DialogFooter className="mt-4">
+                  <Button type="submit">Lưu</Button>
+                </DialogFooter>
+              )}
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
