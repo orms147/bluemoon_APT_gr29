@@ -31,39 +31,56 @@ const KhoanThuSchema = new mongoose.Schema({
 
 // Log CREATE
 KhoanThuSchema.post('save', async function (doc) {
-    const content = `${doc.tenKhoanThu} - ${doc.soTien} VNĐ`
-    await ActivityLog.create({
-        model: 'KhoanThu',
-        action: 'create',
-        documentId: doc._id,
-        title: 'Thêm khoản thu mới',
-        content
-    })
-})
+    try { 
+        const content = `${doc.tenKhoanThu} - ${doc.soTien} VNĐ`;
+
+        await ActivityLog.create({
+            model: 'KhoanThu',
+            action: 'create',
+            documentId: doc._id,
+            title: 'Thêm khoản thu mới',
+            content
+        });
+    } catch (error) {
+        console.log("Lỗi ghi log khi thêm khoản thu", error);
+    }
+});
 
 // Log UPDATE
 KhoanThuSchema.post('findOneAndUpdate', async function (doc) {
-    const content = `${doc.tenKhoanThu} - ${doc.soTien} VNĐ` 
-    await ActivityLog.create({
-        model: 'KhoanThu',
-        action: 'update',
-        documentId: doc._id,
-        title: 'Cập nhật thông tin khoản thu',
-        content
-    })
-})
+    if (!doc) return;
+    try { 
+        const content = `${doc.tenKhoanThu} - ${doc.soTien} VNĐ`;
+
+        await ActivityLog.create({
+            model: 'KhoanThu',
+            action: 'update',
+            documentId: doc._id,
+            title: 'Cập nhật thông tin khoản thu',
+            content
+        });
+    } catch (error) {
+        console.log("Lỗi ghi log khi cập nhật khoản thu", error);
+    }
+});
 
 // Log DELETE
 KhoanThuSchema.post('findOneAndDelete', async function (doc) {
-    const content = `${doc.tenKhoanThu} - ${doc.soTien} VNĐ` 
-    await ActivityLog.create({
-        model: 'KhoanThu',
-        action: 'delete',
-        documentId: doc._id,
-        title: 'Xóa thông tin khoản thu',
-        content
-    })
-})
+    if (!doc) return;
+    try { 
+        const content = `${doc.tenKhoanThu} - ${doc.soTien} VNĐ`;
+
+        await ActivityLog.create({
+            model: 'KhoanThu',
+            action: 'delete',
+            documentId: doc._id,
+            title: 'Xóa thông tin khoản thu',
+            content
+        });
+    } catch (error) {
+        console.log("Lỗi ghi log khi xóa khoản thu", error);
+    }
+});
 
 const KhoanThu = mongoose.model('KhoanThu', KhoanThuSchema);
 

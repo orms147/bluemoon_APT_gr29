@@ -2,7 +2,7 @@ import HoKhau from '../models/HoKhauModel.js'
 
 export const getAllHk = async (req, res) => {
     try {
-        const hks = await HoKhau.find();
+        const hks = await HoKhau.find().sort({maHoKhau: -1});
         res.status(200).json(hks)
     } catch (error) {
         console.log(error);

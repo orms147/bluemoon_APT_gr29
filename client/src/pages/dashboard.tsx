@@ -99,7 +99,7 @@ export function DashboardPage() {
           <CardContent>
             <div className="space-y-4">
               {recentActivities.map((activity) => (
-                <div key={activity.id} className="flex items-center">
+                <div key={activity._id} className="flex items-center">
                   <div className="space-y-1">
                     <p className="text-sm font-medium leading-none">{activity.title}</p>
                     <p className="text-sm text-muted-foreground">

@@ -42,41 +42,65 @@ const PhieuNopSchema = new mongoose.Schema({
 
 // Log CREATE
 PhieuNopSchema.post('save', async function (doc) {
-    const khoanThu = await KhoanThu.findOne(doc.maKhoanThu)
-    const content = `${doc.nguoiNop} - ${khoanThu.tenKhoanThu}`
-    await ActivityLog.create({
-        model: 'PhieuNop',
-        action: 'create',
-        documentId: doc._id,
-        title: 'Nộp phí dịch vụ',
-        content
-    })
-})
+    try {
+        const khoanThu = await KhoanThu.findOne({ maKhoanThu: doc.maKhoanThu });
+
+        const content = khoanThu
+            ? `${doc.nguoiNop} - ${khoanThu.tenKhoanThu}`
+            : `${doc.nguoiNop}`;
+
+        await ActivityLog.create({
+            model: 'PhieuNop',
+            action: 'create',
+            documentId: doc._id,
+            title: 'Nộp phí dịch vụ',
+            content,
+        });
+    } catch (error) {
+        console.error('Lỗi ghi log khi tạo phiếu nộp:', error);
+    }
+});
 
 // Log UPDATE
 PhieuNopSchema.post('findOneAndUpdate', async function (doc) {
-    const khoanThu = await KhoanThu.findOne(doc.maKhoanThu)
-    const content = `${doc.nguoiNop} - ${khoanThu.tenKhoanThu}`
-    await ActivityLog.create({
-        model: 'PhieuNop',
-        action: 'update',
-        documentId: doc._id,
-        title: 'Cập nhật thông tin phiếu nộp',
-        content
-    })
+    if (!doc) return ;
+    try {
+        const khoanThu = await KhoanThu.findOne({maKhoanThu: doc.maKhoanThu});
+        const content = khoanThu 
+            ? `${doc.nguoiNop} - ${khoanThu.tenKhoanThu}` 
+            : `${doc.nguoiNop}`;
+
+        await ActivityLog.create({
+            model: 'PhieuNop',
+            action: 'update',
+            documentId: doc._id,
+            title: 'Cập nhật thông tin phiếu nộp',
+            content
+        });
+    } catch (error) {
+        console.log("Lỗi khi ghi log cập nhật phiếu nộp", error);
+    }
 })
 
 // Log DELETE
 PhieuNopSchema.post('findOneAndDelete', async function (doc) {
-    const khoanThu = await KhoanThu.findOne(doc.maKhoanThu)
-    const content = `${doc.nguoiNop} - ${khoanThu.tenKhoanThu}`
-    await ActivityLog.create({
-        model: 'PhieuNop',
-        action: 'delete',
-        documentId: doc._id,
-        title: 'Xóa phiếu nộp',
-        content
-    })
+    if (!doc) return ;
+    try {
+        const khoanThu = await KhoanThu.findOne({maKhoanThu: doc.maKhoanThu});
+        const content = khoanThu 
+            ? `${doc.nguoiNop} - ${khoanThu.tenKhoanThu}` 
+            : `${doc.nguoiNop}`;
+
+        await ActivityLog.create({
+            model: 'PhieuNop',
+            action: 'delete',
+            documentId: doc._id,
+            title: 'Xóa phiếu nộp',
+            content
+        });
+    } catch (error) {
+        console.log("Lỗi khi ghi log xóa phiếu nộp:", error);
+    }
 })
 
 const PhieuNop = mongoose.model("PhieuNop", PhieuNopSchema);

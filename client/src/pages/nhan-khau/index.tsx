@@ -262,12 +262,6 @@ export function NhanKhauPage() {
                         >
                           Xóa
                         </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="text-destructive"
-                          onClick={() => handleDeleteNhanKhau(nhanKhau.id)}
-                        >
-                          Xóa
-                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

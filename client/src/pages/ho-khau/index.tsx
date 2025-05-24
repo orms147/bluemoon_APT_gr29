@@ -20,14 +20,22 @@ import {
 import { Label } from "@/components/ui/label"
 import { Plus, MoreHorizontal, Search } from 'lucide-react'
 import type { HoKhau } from "@/types"
-import { ADD_HOKHAU_ROUTE, DELETE_HOKHAU_ROUTE, GET_ALL_HOKHAU_ROUTE } from "@/utils/constant"
+import { ADD_HOKHAU_ROUTE, DELETE_HOKHAU_ROUTE, GET_ALL_HOKHAU_ROUTE, PUT_HOKHAU_ROUTE, PUT_KHOANTHU_ROUTE } from "@/utils/constant"
 import { apiClient } from "@/lib/api-client"
 
 export function HoKhauPage() {
   const [hoKhauList, setHoKhauList] = useState<HoKhau[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false)
   const [newHoKhau, setNewHoKhau] = useState<Partial<HoKhau>>({
+    maHoKhau: "",
+    tenChuHo: "",
+    diaChi: "",
+    soThanhVien: 1,
+    ngayLap: new Date().toISOString().split("T")[0],
+  })
+  const [currHoKhau, setCurrHoKhau] = useState<Partial<HoKhau>>({
     maHoKhau: "",
     tenChuHo: "",
     diaChi: "",
@@ -59,6 +67,14 @@ export function HoKhauPage() {
     }))
   }
 
+  const handleCurrHoKhauInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setCurrHoKhau((prev) => ({
+      ...prev,
+      [name]: name === "soThanhVien" ? parseInt(value) : value,
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsDialogOpen(false)
@@ -83,6 +99,26 @@ export function HoKhauPage() {
       } 
       console.log(response);
     } catch(error) {
+      console.log(error);
+    }
+  }
+ 
+  const handleUpdate = async (maHoKhau: string) => {
+    try {
+      const response = await apiClient.put(
+        `${PUT_HOKHAU_ROUTE}/${maHoKhau}`,
+        currHoKhau,
+        {withCredentials: true}
+      )
+      if (response.status === 200) {
+        setHoKhauList((prevList) =>
+          prevList.map((item) =>
+            item.maHoKhau === currHoKhau.maHoKhau ? { ...item, ...currHoKhau } : item
+          )
+        )
+        setIsUpdateDialogOpen(false)
+      }
+    } catch (error) {
       console.log(error);
     }
   }
@@ -197,6 +233,96 @@ export function HoKhauPage() {
             </form>
           </DialogContent>
         </Dialog>
+        
+        <Dialog open={isUpdateDialogOpen} onOpenChange={setIsUpdateDialogOpen}>
+          <DialogContent className="sm:max-w-[500px]">
+            <form onSubmit={(e) => {
+              e.preventDefault();
+            }}>
+              <DialogHeader>
+                <DialogTitle>Cập nhật thông tin hộ khẩu</DialogTitle>
+                <DialogDescription>Nhập thông tin cập nhật vào form bên dưới</DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="maHoKhau" className="text-right">
+                    Mã hộ khẩu
+                  </Label>
+                  <Input
+                    id="maHoKhau"
+                    name="maHoKhau"
+                    value={currHoKhau.maHoKhau}
+                    disabled
+                    className="col-span-3"
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="tenChuHo" className="text-right">
+                    Tên chủ hộ
+                  </Label>
+                  <Input
+                    id="tenChuHo"
+                    name="tenChuHo"
+                    value={currHoKhau.tenChuHo}
+                    onChange={handleCurrHoKhauInputChange}
+                    className="col-span-3"
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="diaChi" className="text-right">
+                    Địa chỉ
+                  </Label>
+                  <Input
+                    id="diaChi"
+                    name="diaChi"
+                    value={currHoKhau.diaChi}
+                    onChange={handleCurrHoKhauInputChange}
+                    className="col-span-3"
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="soThanhVien" className="text-right">
+                    Số thành viên
+                  </Label>
+                  <Input
+                    id="soThanhVien"
+                    name="soThanhVien"
+                    type="number"
+                    min="1"
+                    value={currHoKhau.soThanhVien}
+                    onChange={handleCurrHoKhauInputChange}
+                    className="col-span-3"
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="ngayLap" className="text-right">
+                    Ngày lập
+                  </Label>
+                  <Input
+                    id="ngayLap"
+                    name="ngayLap"
+                    type="date"
+                    value={currHoKhau.ngayLap}
+                    onChange={handleCurrHoKhauInputChange}
+                    className="col-span-3"
+                    required
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button
+                  onClick = {() => handleUpdate(currHoKhau.maHoKhau!)}
+                >
+                  Cập nhật
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="flex items-center gap-2">
@@ -242,7 +368,23 @@ export function HoKhauPage() {
                         <DropdownMenuItem asChild>
                           <Link to={`/ho-khau/${hoKhau.maHoKhau}`}>Xem chi tiết</Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem>Sửa</DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => {                            
+                            setCurrHoKhau(
+                              {
+                                maHoKhau: hoKhau.maHoKhau,
+                                tenChuHo: hoKhau.tenChuHo,
+                                diaChi: hoKhau.diaChi,
+                                soThanhVien: hoKhau.soThanhVien,
+                                ngayLap: new Date(hoKhau.ngayLap).toISOString().split("T")[0],
+                              }
+                            )
+                            setIsUpdateDialogOpen(true)
+                          }
+                        }
+                        >
+                          Sửa
+                        </DropdownMenuItem>
                         <DropdownMenuItem 
                           className="text-destructive"
                           onClick={() => handleDelete(hoKhau.maHoKhau)}
