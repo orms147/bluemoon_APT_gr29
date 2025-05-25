@@ -33,7 +33,21 @@ export const addNk = async (req, res, next) => {
 };
 
 export const updateNk = async (req, res, next) => {
-
+    try {
+        const {hoTen, ngaySinh, gioiTinh, cccd } = req.body;
+        const updatedNk = await NhanKhau.findOneAndUpdate({maNhanKhau: req.params.maNhanKhau}, {
+            hoTen,
+            ngaySinh,
+            gioiTinh,
+            cccd
+        });
+        res.status(200).json(updatedNk);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            message: 'Server bị lỗi'
+        });
+    }
 }
 
 export const deleteNk = async (req, res, next) => {

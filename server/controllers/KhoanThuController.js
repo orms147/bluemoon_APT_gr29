@@ -30,7 +30,20 @@ export const addKt = async (req, res, next) => {
 }
 
 export const updateKt = async (req, res, next) => {
-
+    try {
+        const {tenKhoanThu, loai, soTien, ngayTao, ghiChu} = req.body;
+        const updatedKt = await KhoanThu.findOneAndUpdate({maKhoanThu: req.params.maKhoanThu}, {
+            tenKhoanThu,
+            loai,
+            soTien,
+            ngayTao,
+            ghiChu
+        });
+        res.status(200).json(updatedKt);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({message: "Server bị lỗi"});
+    }
 }
 
 export const deleteKt = async (req, res, next) => {
