@@ -36,7 +36,24 @@ export const addPn = async (req, res, next) => {
 }
 
 export const updatePn = async (req, res, next) => {
-
+    try {
+        const {maKhoanThu, maHoKhau, nguoiNop, soTien, ngayNop, ghiChu} = req.body;
+        
+        const updatedPn = await PhieuNop.findOneAndUpdate({maPhieu: req.params.maPhieu}, {
+            maKhoanThu,
+            maHoKhau,
+            nguoiNop,
+            soTien,
+            ngayNop,
+            ghiChu
+        });
+        res.status(200).json(updatedPn);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            message: 'Server bị lỗi'
+        });
+    }
 }
 
 export const deletePn = async (req, res, next) => {

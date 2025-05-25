@@ -20,7 +20,7 @@ import { Label } from "@/components/ui/label"
 import { Plus, MoreHorizontal, Search } from 'lucide-react'
 import type { PhieuNopTien, KhoanThu, HoKhau } from "@/types"
 import { apiClient } from '@/lib/api-client'
-import { GET_ALL_HOKHAU_ROUTE, GET_ALL_KHOANTHU_ROUTE, GET_ALL_PHIEUNOP_ROUTE, ADD_PHIEUNOP_ROUTE, DELETE_PHIEUNOP_ROUTE } from '@/utils/constant'
+import { GET_ALL_HOKHAU_ROUTE, GET_ALL_KHOANTHU_ROUTE, GET_ALL_PHIEUNOP_ROUTE, ADD_PHIEUNOP_ROUTE, PUT_PHIEUNOP_ROUTE, DELETE_PHIEUNOP_ROUTE } from '@/utils/constant'
 
 export function ThuPhiPage() {
   const [hoKhauList, setHoKhauList] = useState<HoKhau[]>([])
@@ -28,6 +28,17 @@ export function ThuPhiPage() {
   const [phieuNopTienList,setPhieuNopTienList] = useState<PhieuNopTien[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false)
+  const [selectedPhieuNopTien, setSelectedPhieuNopTien] = useState<Partial<PhieuNopTien>>({
+    maPhieu: "",
+    maKhoanThu: "",
+    maHoKhau: "",
+    nguoiNop: "",
+    soTien: 0,
+    ngayNop: new Date().toISOString().split("T")[0],
+    nguoiThu: "Admin",
+    ghiChu: "",
+  })
   const [newPhieuNopTien, setNewPhieuNopTien] = useState<Partial<PhieuNopTien>>({
     maPhieu: "",
     maKhoanThu: "",
@@ -38,10 +49,6 @@ export function ThuPhiPage() {
     nguoiThu: "Admin",
     ghiChu: "",
   })
-  const role = "admin" // hoặc lấy từ context, props, v.v.
-  
-  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false)
-  const [detailPhieu, setDetailPhieu] = useState<PhieuNopTien | null>(null)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -78,6 +85,14 @@ export function ThuPhiPage() {
     }))
   }
 
+  const handleUpdateInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target
+    setSelectedPhieuNopTien((prev) => ({
+      ...prev,
+      [name]: name === "soTien" ? Number.parseInt(value) : value,
+    }))
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsDialogOpen(false)
@@ -106,6 +121,25 @@ export function ThuPhiPage() {
     }
   }
 
+  const handleUpdate = async (maPhieu: string) => {
+    try {
+      const response = await apiClient.put(
+        `${PUT_PHIEUNOP_ROUTE}/${maPhieu}`,
+        selectedPhieuNopTien,
+        {withCredentials: true}
+      )
+      if (response.status === 200){
+        setPhieuNopTienList((prev) => 
+          prev.map((phieuNop) => 
+          phieuNop.maPhieu === maPhieu ? {...phieuNop, ...selectedPhieuNopTien}: phieuNop
+        ))
+        setIsUpdateDialogOpen(false)
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   const handleDelete = async (maPhieu: string) => {
     try {
       const response = await apiClient.delete(
@@ -119,11 +153,6 @@ export function ThuPhiPage() {
     } catch (error) {
       console.log(error)
     }
-  }
-
-  // Xóa phiếu nộp tiền
-  const handleDeletePhieu = (id: string) => {
-    setPhieuNopTienList(list => list.filter(phieu => phieu.id !== id))
   }
 
   return (
@@ -257,6 +286,130 @@ export function ThuPhiPage() {
             </form>
           </DialogContent>
         </Dialog>
+
+        <Dialog open={isUpdateDialogOpen} onOpenChange={setIsUpdateDialogOpen}>
+          <DialogContent className="sm:max-w-[500px]">
+            <form onSubmit={(e) => e.preventDefault()}>
+              <DialogHeader>
+                <DialogTitle>Cập nhật phiếu nộp tiền</DialogTitle>
+                <DialogDescription>Nhập thông tin cập nhật vào form bên dưới</DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="maPhieu" className="text-right">
+                    Mã phiếu
+                  </Label>
+                  <Input
+                    id="maPhieu"
+                    name="maPhieu"
+                    value={selectedPhieuNopTien.maPhieu}
+                    disabled
+                    className="col-span-3"
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="maKhoanThu" className="text-right">
+                    Khoản thu
+                  </Label>
+                  <select
+                    id="maKhoanThu"
+                    name="maKhoanThu"
+                    value={selectedPhieuNopTien.maKhoanThu}
+                    onChange={handleUpdateInputChange}
+                    className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    required
+                  >
+                    <option value="">Chọn khoản thu</option>
+                    {Object.values(khoanThuList).map((khoanThu) => (
+                      <option key={khoanThu.maKhoanThu} value={khoanThu.maKhoanThu}>
+                        {khoanThu.tenKhoanThu} - {khoanThu.maKhoanThu}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="maHoKhau" className="text-right">
+                    Hộ khẩu
+                  </Label>
+                  <select
+                    id="maHoKhau"
+                    name="maHoKhau"
+                    value={selectedPhieuNopTien.maHoKhau}
+                    onChange={handleUpdateInputChange}
+                    className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    required
+                  >
+                    <option value="">Chọn hộ khẩu</option>
+                    {Object.values(hoKhauList).map((hoKhau) => (
+                      <option key={hoKhau.maHoKhau} value={hoKhau.maHoKhau}>
+                        {hoKhau.tenChuHo} - {hoKhau.maHoKhau}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="nguoiNop" className="text-right">
+                    Người nộp
+                  </Label>
+                  <Input
+                    id="nguoiNop"
+                    name="nguoiNop"
+                    value={selectedPhieuNopTien.nguoiNop}
+                    onChange={handleUpdateInputChange}
+                    className="col-span-3"
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="soTien" className="text-right">
+                    Số tiền
+                  </Label>
+                  <Input
+                    id="soTien"
+                    name="soTien"
+                    type="number"
+                    value={selectedPhieuNopTien.soTien}
+                    onChange={handleUpdateInputChange}
+                    className="col-span-3"
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="ngayNop" className="text-right">
+                    Ngày nộp
+                  </Label>
+                  <Input
+                    id="ngayNop"
+                    name="ngayNop"
+                    type="date"
+                    value={selectedPhieuNopTien.ngayNop}
+                    onChange={handleUpdateInputChange}
+                    className="col-span-3"
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="ghiChu" className="text-right">
+                    Ghi chú
+                  </Label>
+                  <Input
+                    id="ghiChu"
+                    name="ghiChu"
+                    value={selectedPhieuNopTien.ghiChu}
+                    onChange={handleUpdateInputChange}
+                    className="col-span-3"
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button
+                  onClick={() => handleUpdate(selectedPhieuNopTien.maPhieu!)}
+                >Cập nhật</Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="flex items-center gap-2">
@@ -303,15 +456,24 @@ export function ThuPhiPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        <DropdownMenuItem>In phiếu thu</DropdownMenuItem>
                         <DropdownMenuItem
-                          onClick={() => {
-                            setDetailPhieu(phieu)
-                            setIsDetailDialogOpen(true)
+                          onClick = {() => {
+                            setSelectedPhieuNopTien({
+                              maPhieu: phieu.maPhieu,
+                              maKhoanThu: phieu.maKhoanThu,
+                              maHoKhau: phieu.maHoKhau,
+                              nguoiNop: phieu.nguoiNop,
+                              soTien: phieu.soTien,
+                              ngayNop: new Date(phieu.ngayNop).toISOString().split("T")[0],
+                              nguoiThu: "Admin",
+                              ghiChu: phieu.ghiChu,                              
+                            })
+                            setIsUpdateDialogOpen(true)
                           }}
                         >
-                          Xem chi tiết
+                          Sửa
                         </DropdownMenuItem>
-                        <DropdownMenuItem>In phiếu thu</DropdownMenuItem>
                         <DropdownMenuItem 
                           className="text-destructive"
                           onClick={() => handleDelete(phieu.maPhieu)}
@@ -333,161 +495,6 @@ export function ThuPhiPage() {
           </TableBody>
         </Table>
       </div>
-      <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Chi tiết phiếu nộp tiền</DialogTitle>
-          </DialogHeader>
-          {detailPhieu && (
-            <form
-              onSubmit={e => {
-                e.preventDefault()
-                if (role === "admin") {
-                  setPhieuNopTienList(list =>
-                    list.map(p => p.id === detailPhieu.id ? detailPhieu : p)
-                  )
-                  setIsDetailDialogOpen(false)
-                }
-              }}
-            >
-              <div className="space-y-2">
-                <div>
-                  <b>Mã phiếu:</b>{" "}
-                  {role === "admin" ? (
-                    <Input
-                      value={detailPhieu.maPhieu}
-                      onChange={e =>
-                        setDetailPhieu(phieu => phieu ? { ...phieu, maPhieu: e.target.value } : phieu)
-                      }
-                      required
-                    />
-                  ) : (
-                    detailPhieu.maPhieu
-                  )}
-                </div>
-                <div>
-                  <b>Khoản thu:</b>{" "}
-                  {role === "admin" ? (
-                    <select
-                      value={detailPhieu.khoanThuId}
-                      onChange={e =>
-                        setDetailPhieu(phieu => phieu ? { ...phieu, khoanThuId: e.target.value } : phieu)
-                      }
-                      required
-                      className="border rounded px-2 py-1"
-                    >
-                      {Object.values(mockKhoanThu).map(khoanThu => (
-                        <option key={khoanThu.id} value={khoanThu.id}>
-                          {khoanThu.tenKhoanThu} - {khoanThu.maKhoanThu}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    mockKhoanThu[detailPhieu.khoanThuId]?.tenKhoanThu || "N/A"
-                  )}
-                </div>
-                <div>
-                  <b>Hộ khẩu:</b>{" "}
-                  {role === "admin" ? (
-                    <select
-                      value={detailPhieu.hoKhauId}
-                      onChange={e =>
-                        setDetailPhieu(phieu => phieu ? { ...phieu, hoKhauId: e.target.value } : phieu)
-                      }
-                      required
-                      className="border rounded px-2 py-1"
-                    >
-                      {Object.values(mockHoKhau).map(hoKhau => (
-                        <option key={hoKhau.id} value={hoKhau.id}>
-                          {hoKhau.tenChuHo} - {hoKhau.maHoKhau}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    mockHoKhau[detailPhieu.hoKhauId]?.tenChuHo || "N/A"
-                  )}
-                </div>
-                <div>
-                  <b>Người nộp:</b>{" "}
-                  {role === "admin" ? (
-                    <Input
-                      value={detailPhieu.nguoiNop}
-                      onChange={e =>
-                        setDetailPhieu(phieu => phieu ? { ...phieu, nguoiNop: e.target.value } : phieu)
-                      }
-                      required
-                    />
-                  ) : (
-                    detailPhieu.nguoiNop
-                  )}
-                </div>
-                <div>
-                  <b>Số tiền:</b>{" "}
-                  {role === "admin" ? (
-                    <Input
-                      type="number"
-                      value={detailPhieu.soTien}
-                      onChange={e =>
-                        setDetailPhieu(phieu => phieu ? { ...phieu, soTien: Number(e.target.value) } : phieu)
-                      }
-                      required
-                    />
-                  ) : (
-                    detailPhieu.soTien.toLocaleString("vi-VN") + " VND"
-                  )}
-                </div>
-                <div>
-                  <b>Ngày nộp:</b>{" "}
-                  {role === "admin" ? (
-                    <Input
-                      type="date"
-                      value={detailPhieu.ngayNop}
-                      onChange={e =>
-                        setDetailPhieu(phieu => phieu ? { ...phieu, ngayNop: e.target.value } : phieu)
-                      }
-                      required
-                    />
-                  ) : (
-                    new Date(detailPhieu.ngayNop).toLocaleDateString("vi-VN")
-                  )}
-                </div>
-                <div>
-                  <b>Người thu:</b>{" "}
-                  {role === "admin" ? (
-                    <Input
-                      value={detailPhieu.nguoiThu}
-                      onChange={e =>
-                        setDetailPhieu(phieu => phieu ? { ...phieu, nguoiThu: e.target.value } : phieu)
-                      }
-                      required
-                    />
-                  ) : (
-                    detailPhieu.nguoiThu
-                  )}
-                </div>
-                <div>
-                  <b>Ghi chú:</b>{" "}
-                  {role === "admin" ? (
-                    <Input
-                      value={detailPhieu.ghiChu}
-                      onChange={e =>
-                        setDetailPhieu(phieu => phieu ? { ...phieu, ghiChu: e.target.value } : phieu)
-                      }
-                    />
-                  ) : (
-                    detailPhieu.ghiChu
-                  )}
-                </div>
-              </div>
-              {role === "admin" && (
-                <DialogFooter className="mt-4">
-                  <Button type="submit">Lưu</Button>
-                </DialogFooter>
-              )}
-            </form>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

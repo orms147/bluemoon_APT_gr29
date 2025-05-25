@@ -35,7 +35,17 @@ export const addTttv = async (req, res, next) => {
 }
 
 export const updateTttv = async (req, res, next) => {
-
+    try {
+        const {nhanKhauId, loai, tuNgay, denNgay, diaChi, lyDo} = req.body;
+        const updatedTttv = await TamTruTamVang.findOneAndUpdate(
+            { maDangKy: req.params.maDangky },
+            { nhanKhauId, loai, tuNgay, denNgay, diaChi, lyDo },
+        );
+        return res.status(200).json(updatedTttv);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: 'Server bị lỗi'});
+    }
 }
 
 export const deleteTttv = async (req, res, next) => {

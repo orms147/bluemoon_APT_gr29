@@ -8,7 +8,7 @@ phieuNopRoutes.get('/danh-sach-phieu-nop', getAllPn);
 // POST 
 phieuNopRoutes.post('/them-phieu-nop', addPn);
 // PUT 
-phieuNopRoutes.put('/cap-nhat-phieu-nop', updatePn);
+phieuNopRoutes.put('/cap-nhat-phieu-nop/:maPhieu', updatePn);
 // DELETE
 phieuNopRoutes.delete('/xoa-phieu-nop/:maPhieu', deletePn);
 
