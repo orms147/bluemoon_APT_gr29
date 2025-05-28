@@ -9,6 +9,7 @@ export const HOKHAU_ROUTES = "api/ho-khau";
 export const GET_HOKHAU_BY_ID_ROUTE = `${HOKHAU_ROUTES}`;
 export const GET_ALL_HOKHAU_ROUTE = `${HOKHAU_ROUTES}/danh-sach-ho-khau`;
 export const ADD_HOKHAU_ROUTE = `${HOKHAU_ROUTES}/them-ho-khau`;
+export const PUT_HOKHAU_ROUTE = `${HOKHAU_ROUTES}/cap-nhat-ho-khau`
 export const DELETE_HOKHAU_ROUTE = `${HOKHAU_ROUTES}/xoa-ho-khau`;
 
 export const NHANKHAU_ROUTES = "api/nhan-khau";

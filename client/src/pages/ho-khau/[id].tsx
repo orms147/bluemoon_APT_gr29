@@ -1,3 +1,4 @@
+
 "use client"
 
 import type React from "react"
@@ -104,8 +105,6 @@ export function HoKhauDetailPage() {
           `${GET_HOKHAU_BY_ID_ROUTE}/${maHoKhau}`, 
           {withCredentials: true}
         )
-        console.log(response.status)
-        console.log(response.data)
         if (response.status === 200) {
           const hk = response.data
           setHoKhau(hk)

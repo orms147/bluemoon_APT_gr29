@@ -21,16 +21,25 @@ import { Label } from "@/components/ui/label"
 import { Plus, MoreHorizontal, Search } from 'lucide-react'
 import type { NhanKhau } from "@/types"
 import { apiClient } from "@/lib/api-client"
-import { ADD_NHANKHAU_ROUTE, GET_ALL_NHANKHAU_ROUTE, DELETE_NHANKHAU_ROUTE } from "@/utils/constant"
+import { ADD_NHANKHAU_ROUTE, GET_ALL_NHANKHAU_ROUTE, PUT_NHANKHAU_ROUTE, DELETE_NHANKHAU_ROUTE } from "@/utils/constant"
 
 export function NhanKhauPage() {
   const [nhanKhauList, setNhanKhauList] = useState<NhanKhau[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false)
+  const [currNhanKhau, setCurrNhanKhau] = useState<Partial<NhanKhau>>({
+    maNhanKhau: "",
+    hoTen: "",
+    ngaySinh: new Date().toISOString().split("T")[0],
+    gioiTinh: "Nam",
+    cccd: "",
+  })
+
   const [newNhanKhau, setNewNhanKhau] = useState<Partial<NhanKhau>>({
     maNhanKhau: "",
     hoTen: "",
-    ngaySinh: "",
+    ngaySinh: new Date().toISOString().split("T")[0],
     gioiTinh: "Nam",
     cccd: "",
   })
@@ -61,9 +70,16 @@ export function NhanKhauPage() {
     }))
   }
 
+  const handleUpdateInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target
+    setCurrNhanKhau((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("New resident:", newNhanKhau)
     setIsDialogOpen(false)
     try {
       const response = await apiClient.post(
@@ -77,7 +93,7 @@ export function NhanKhauPage() {
         setNewNhanKhau({
           maNhanKhau: "",
           hoTen: "",
-          ngaySinh: "",
+          ngaySinh: new Date().toISOString().split("T")[0],
           gioiTinh: "Nam",
           cccd: "",
         })
@@ -89,6 +105,23 @@ export function NhanKhauPage() {
     }
     
   }
+
+  const handleUpdate = async (maNhanKhau: string) => {
+    try {
+      const response = await apiClient.put(
+        `${PUT_NHANKHAU_ROUTE}/${maNhanKhau}`,
+        currNhanKhau,
+        {withCredentials: true}
+      )
+      if (response.status == 200){
+        setNhanKhauList((prev) => prev.map((item) => item.maNhanKhau === currNhanKhau.maNhanKhau ? {...item, ...currNhanKhau} : item))
+        setIsUpdateDialogOpen(false)
+      }
+    } catch (error){
+      console.log(error);
+    }
+  }
+  
 
   const handleDelete = async(maNhanKhau : string) => {
     try { 
@@ -200,6 +233,96 @@ export function NhanKhauPage() {
             </form>
           </DialogContent>
         </Dialog>
+
+        <Dialog open={isUpdateDialogOpen} onOpenChange={setIsUpdateDialogOpen}>
+          <DialogContent className="sm:max-w-[500px]">
+            <form onSubmit={(e) => e.preventDefault()}>
+              <DialogHeader>
+                <DialogTitle>Cập nhật thông tin nhân khẩu mới</DialogTitle>
+                <DialogDescription>Nhập thông tin cập nhật vào form bên dưới</DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="maNhanKhau" className="text-right">
+                    Mã nhân khẩu
+                  </Label>
+                  <Input
+                    id="maNhanKhau"
+                    name="maNhanKhau"
+                    value={currNhanKhau.maNhanKhau}
+                    disabled
+                    className="col-span-3"
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="hoTen" className="text-right">
+                    Họ tên
+                  </Label>
+                  <Input
+                    id="hoTen"
+                    name="hoTen"
+                    value={currNhanKhau.hoTen}
+                    onChange={handleUpdateInputChange}
+                    className="col-span-3"
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="ngaySinh" className="text-right">
+                    Ngày sinh
+                  </Label>
+                  <Input
+                    id="ngaySinh"
+                    name="ngaySinh"
+                    type="date"
+                    value={currNhanKhau.ngaySinh}
+                    onChange={handleUpdateInputChange}
+                    className="col-span-3"
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="gioiTinh" className="text-right">
+                    Giới tính
+                  </Label>
+                  <select
+                    id="gioiTinh"
+                    name="gioiTinh"
+                    value={currNhanKhau.gioiTinh}
+                    onChange={handleUpdateInputChange}
+                    className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    required
+                  >
+                    <option value="Nam">Nam</option>
+                    <option value="Nữ">Nữ</option>
+                    <option value="Khác">Khác</option>
+                  </select>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="cccd" className="text-right">
+                    CCCD
+                  </Label>
+                  <Input
+                    id="cccd"
+                    name="cccd"
+                    value={currNhanKhau.cccd}
+                    onChange={handleUpdateInputChange}
+                    className="col-span-3"
+                    required
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button 
+                  onClick = {() => handleUpdate(currNhanKhau.maNhanKhau!)}
+                >
+                  Cập nhật
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="flex items-center gap-2">
@@ -251,11 +374,21 @@ export function NhanKhauPage() {
                           <span className="sr-only">Mở menu</span>
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem asChild>
-                          <Link to={`/nhan-khau/${nhanKhau.maNhanKhau}`}>Xem chi tiết</Link>
+                      <DropdownMenuContent align="end" className="bg-white shadow-lg rounded-md !bg-opacity-100">
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setCurrNhanKhau({
+                              maNhanKhau: nhanKhau.maNhanKhau,
+                              hoTen: nhanKhau.hoTen,
+                              ngaySinh: new Date(nhanKhau.ngaySinh).toISOString().split("T")[0],
+                              gioiTinh: nhanKhau.gioiTinh,
+                              cccd: nhanKhau.cccd
+                            })
+                            setIsUpdateDialogOpen(true)
+                          }}
+                        >
+                          Sửa
                         </DropdownMenuItem>
-                        <DropdownMenuItem>Sửa</DropdownMenuItem>
                         <DropdownMenuItem 
                           className="text-destructive"
                           onClick={() => handleDelete(nhanKhau.maNhanKhau)}

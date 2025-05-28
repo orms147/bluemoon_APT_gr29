@@ -1,21 +1,3 @@
-<<<<<<< HEAD
-const express = require('express');
-const cors = require('cors');
-const app = express();
-const port = 3000;
-
-app.use(cors());
-app.use(express.json());
-
-// Define your routes here
-app.get('/', (req, res) => {
-  res.send('Hello, World!');
-});
-
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
-=======
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -61,4 +43,3 @@ app.listen(port, () => {
 mongoose.connect(databaseURL)
     .then(() => console.log('Connected to DB successfully.'))
     .catch((err) => console.log(err.message));
->>>>>>> 1a85a12589427b9ab8097fe3cdf6285721976c66

@@ -20,13 +20,22 @@ import { Label } from "@/components/ui/label"
 import { Plus, MoreHorizontal, Search } from 'lucide-react'
 import type { KhoanThu } from "@/types"
 import { apiClient } from '@/lib/api-client'
-import { GET_ALL_KHOANTHU_ROUTE, ADD_KHOANTHU_ROUTE, DELETE_KHOANTHU_ROUTE } from '@/utils/constant'
+import { GET_ALL_KHOANTHU_ROUTE, ADD_KHOANTHU_ROUTE, PUT_KHOANTHU_ROUTE, DELETE_KHOANTHU_ROUTE } from '@/utils/constant'
 
 export function KhoanThuPage() {
   const [khoanThuList, setKhoanThuList] = useState<KhoanThu[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false)
   const [newKhoanThu, setNewKhoanThu] = useState<Partial<KhoanThu>>({
+    maKhoanThu: "",
+    tenKhoanThu: "",
+    loai: "Bắt buộc",
+    soTien: 0,
+    ngayTao: new Date().toISOString().split("T")[0],
+    ghiChu: "",
+  })
+  const [currKhoanThu, setCurrKhoanThu] = useState<Partial<KhoanThu>>({
     maKhoanThu: "",
     tenKhoanThu: "",
     loai: "Bắt buộc",
@@ -39,7 +48,7 @@ export function KhoanThuPage() {
     const getListKhoanThu = async () => {
       const response = await apiClient.get(
         GET_ALL_KHOANTHU_ROUTE,
-        {withCrediental: true},
+        {withCredentials: true}
       );
       setKhoanThuList(response.data)
     }
@@ -56,6 +65,14 @@ export function KhoanThuPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setNewKhoanThu((prev) => ({
+      ...prev,
+      [name]: name === "soTien" ? Number.parseInt(value) : value,
+    }))
+  }
+
+  const handleUpdateInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target
+    setCurrKhoanThu((prev) => ({
       ...prev,
       [name]: name === "soTien" ? Number.parseInt(value) : value,
     }))
@@ -84,6 +101,25 @@ export function KhoanThuPage() {
         setKhoanThuList([...khoanThuList, response.data])
       }
       console.log(response)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const handleUpdate = async (maKhoanThu : string ) => {
+    try {
+      const response = await apiClient.put(
+        `${PUT_KHOANTHU_ROUTE}/${maKhoanThu}`,
+        currKhoanThu,
+        {withCredentials: true}
+      );
+      if (response.status === 200) {
+        setKhoanThuList((prev) => 
+          prev.map((khoanThu) =>
+          khoanThu.maKhoanThu === maKhoanThu ? {...khoanThu, ...currKhoanThu} : khoanThu
+        ))
+        setIsUpdateDialogOpen(false)
+      }
     } catch (error) {
       console.log(error)
     }
@@ -211,6 +247,108 @@ export function KhoanThuPage() {
             </form>
           </DialogContent>
         </Dialog>
+
+        <Dialog open={isUpdateDialogOpen} onOpenChange={setIsUpdateDialogOpen}>
+          <DialogContent className="sm:max-w-[500px]">
+            <form onSubmit={(e) => e.preventDefault()}>
+              <DialogHeader> 
+                <DialogTitle>Cập nhật thông tin khoản thu</DialogTitle>
+                <DialogDescription>Nhập thông tin cập nhật vào form bên dưới</DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="maKhoanThu" className="text-right">
+                    Mã khoản thu
+                  </Label>
+                  <Input
+                    id="maKhoanThu"
+                    name="maKhoanThu"
+                    value={currKhoanThu.maKhoanThu}
+                    disabled
+                    className="col-span-3"
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="tenKhoanThu" className="text-right">
+                    Tên khoản thu
+                  </Label>
+                  <Input
+                    id="tenKhoanThu"
+                    name="tenKhoanThu"
+                    value={currKhoanThu.tenKhoanThu}
+                    onChange={handleUpdateInputChange}
+                    className="col-span-3"
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="loai" className="text-right">
+                    Loại
+                  </Label>
+                  <select
+                    id="loai"
+                    name="loai"
+                    value={currKhoanThu.loai}
+                    onChange={handleUpdateInputChange}
+                    className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    required
+                  >
+                    <option value="Bắt buộc">Bắt buộc</option>
+                    <option value="Tự nguyện">Tự nguyện</option>
+                  </select>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="soTien" className="text-right">
+                    Số tiền
+                  </Label>
+                  <Input
+                    id="soTien"
+                    name="soTien"
+                    type="number"
+                    value={currKhoanThu.soTien}
+                    onChange={handleUpdateInputChange}
+                    className="col-span-3"
+                    disabled={currKhoanThu.loai === "Tự nguyện"}
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="ngayTao" className="text-right">
+                    Ngày tạo
+                  </Label>
+                  <Input
+                    id="ngayTao"
+                    name="ngayTao"
+                    type="date"
+                    value={currKhoanThu.ngayTao}
+                    onChange={handleUpdateInputChange}
+                    className="col-span-3"
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="ghiChu" className="text-right">
+                    Ghi chú
+                  </Label>
+                  <Input
+                    id="ghiChu"
+                    name="ghiChu"
+                    value={currKhoanThu.ghiChu}
+                    onChange={handleUpdateInputChange}
+                    className="col-span-3"
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button 
+                  onClick = {() => handleUpdate(currKhoanThu.maKhoanThu!)}
+                >
+                  Cập nhật
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="flex items-center gap-2">
@@ -257,7 +395,21 @@ export function KhoanThuPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>Sửa</DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setCurrKhoanThu({
+                                maKhoanThu: khoanThu.maKhoanThu,
+                                tenKhoanThu: khoanThu.tenKhoanThu,
+                                loai: khoanThu.loai,
+                                soTien: khoanThu.soTien,
+                                ngayTao: new Date(khoanThu.ngayTao).toISOString().split("T")[0],
+                                ghiChu: khoanThu.ghiChu,
+                              })
+                            setIsUpdateDialogOpen(true)
+                          }}
+                        >
+                          Sửa
+                        </DropdownMenuItem>
                         <DropdownMenuItem 
                           className="text-destructive" 
                           onClick={() => handleDelete(khoanThu.maKhoanThu)}

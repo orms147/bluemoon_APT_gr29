@@ -70,7 +70,7 @@ export interface User {
   }
 
   export interface Activity {
-    id: string,
+    _id: string,
     model: string,
     action: string,
     title: string,

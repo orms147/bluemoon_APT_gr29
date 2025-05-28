@@ -35,7 +35,21 @@ export function DashboardPage() {
     fetchData()
   },[])
   const tongThu = (phieuNopList.reduce((sum, item) => sum + item.soTien, 0) / 1000000).toString()
-  // Mock data for dashboard
+  const allKhoanThu = new Set(khoanThuList.map(kt => kt.maKhoanThu))
+  const hoKhauToKhoanThu = new Map<string, Set<string>>()
+  for (const pn of phieuNopList){
+    if (!hoKhauToKhoanThu.has(pn.maHoKhau)){
+      hoKhauToKhoanThu.set(pn.maHoKhau, new Set())
+    }
+    hoKhauToKhoanThu.get(pn.maHoKhau)?.add(pn.maKhoanThu)
+  }
+  let count = 0;
+  for (const [maHoKhau, khoanThuDaDong] of hoKhauToKhoanThu.entries()) {
+    if (khoanThuDaDong.size === allKhoanThu.size) {
+      count++;
+    }
+  }
+
   const stats = [
     {
       title: "Tổng số hộ khẩu",
@@ -99,7 +113,7 @@ export function DashboardPage() {
           <CardContent>
             <div className="space-y-4">
               {recentActivities.map((activity) => (
-                <div key={activity.id} className="flex items-center">
+                <div key={activity._id} className="flex items-center">
                   <div className="space-y-1">
                     <p className="text-sm font-medium leading-none">{activity.title}</p>
                     <p className="text-sm text-muted-foreground">
@@ -125,8 +139,8 @@ export function DashboardPage() {
           </CardHeader>
           <CardContent className="flex h-[300px] items-center justify-center">
             <div className="text-center">
-              <div className="text-5xl font-bold text-primary">78%</div>
-              <p className="mt-2 text-sm text-muted-foreground">Đã thu: 96/124 hộ gia đình</p>
+              <div className="text-5xl font-bold text-primary">{Math.floor(Number(count/hoKhauList.length*100))}%</div>
+              <p className="mt-2 text-sm text-muted-foreground">Đã thu: {count}/{hoKhauList.length} hộ gia đình</p>
             </div>
           </CardContent>
         </Card>
