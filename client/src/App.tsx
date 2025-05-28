@@ -1,35 +1,95 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from "react-router-dom";
+import { Layout } from "./components/layout";
+import { LoginPage } from "./pages/login";
+import { DashboardPage } from "./pages/dashboard";
+import { HoKhauPage } from "./pages/ho-khau";
+import { HoKhauDetailPage } from "./pages/ho-khau/[id]";
+import { NhanKhauPage } from "./pages/nhan-khau";
+import { KhoanThuPage } from "./pages/khoan-thu";
+import { ThuPhiPage } from "./pages/thu-phi";
+import { TamTruTamVangPage } from "./pages/tam-tru-tam-vang";
+import { ThongKePage } from "./pages/thong-ke";
+import { CaiDatPage } from "./pages/cai-dat";
+import { useAppStore } from "./store";
+import { GET_USER_INFO_ROUTE } from "./utils/constant";
+import { apiClient } from "./lib/api-client";
+import { useEffect, useState, ReactNode } from "react";
+
+type RouteProps = {
+  children: ReactNode;
+};
+
+const PrivateRoute = ({ children }: RouteProps) => {
+  const { userInfo } = useAppStore();
+  return userInfo ? children : <Navigate to="/login" replace />;
+};
+
+const LoginRoute = ({ children }: RouteProps) => {
+  const { userInfo } = useAppStore();
+  return userInfo ? <Navigate to="/" replace /> : children;
+};
+
+const PrivateLayout = () => (
+  <PrivateRoute>
+    <Layout>
+      <Outlet />
+    </Layout>
+  </PrivateRoute>
+);
 
 function App() {
-  const [count, setCount] = useState(0)
+  const { userInfo, setUserInfo } = useAppStore();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const getUserData = async () => {
+      try {
+        const response = await apiClient.get(GET_USER_INFO_ROUTE, { withCredentials: true });
+        if (response.status === 200 && response.data?.id) {
+          setUserInfo(response.data);
+        } else {
+          setUserInfo(undefined as any);
+        }
+      } catch (error) {
+        setUserInfo(undefined as any);
+        console.error("Error fetching user info:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getUserData();
+  }, [setUserInfo]);
+
+  if (loading) return <div>Loading...</div>;
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <Router>
+      <Routes>
+        <Route
+          path="/login"
+          element={
+            <LoginRoute>
+              <LoginPage />
+            </LoginRoute>
+          }
+        />
+
+        <Route element={<PrivateLayout />}>
+          <Route index element={<DashboardPage />} />
+          <Route path="/ho-khau" element={<HoKhauPage />} />
+          <Route path="/ho-khau/:maHoKhau" element={<HoKhauDetailPage />} />
+          <Route path="/nhan-khau" element={<NhanKhauPage />} />
+          <Route path="/khoan-thu" element={<KhoanThuPage />} />
+          <Route path="/thu-phi" element={<ThuPhiPage />} />
+          <Route path="/tam-tru-tam-vang" element={<TamTruTamVangPage />} />
+          <Route path="/thong-ke" element={<ThongKePage />} />
+          <Route path="/cai-dat" element={<CaiDatPage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
+      </Routes>
+    </Router>
+  );
 }
 
-export default App
+export default App;
