@@ -22,12 +22,7 @@ type RouteProps = {
 const PrivateRoute = ({ children }: RouteProps) => {
   const { userInfo } = useAppStore();
   return userInfo ? children : <Navigate to="/login" replace />;
-};
-
-const LoginRoute = ({ children }: RouteProps) => {
-  const { userInfo } = useAppStore();
-  return userInfo ? <Navigate to="/" replace /> : children;
-};
+}
 
 const PrivateLayout = () => (
   <PrivateRoute>
@@ -45,21 +40,20 @@ function App() {
     const getUserData = async () => {
       try {
         const response = await apiClient.get(GET_USER_INFO_ROUTE, { withCredentials: true });
-        if (response.status === 200 && response.data?.id) {
+        if (response.status === 200 && response.data) {
           setUserInfo(response.data);
         } else {
           setUserInfo(undefined as any);
         }
       } catch (error) {
         setUserInfo(undefined as any);
-        console.error("Error fetching user info:", error);
       } finally {
         setLoading(false);
       }
     };
 
     getUserData();
-  }, [setUserInfo]);
+  }, [userInfo, setUserInfo]);
 
   if (loading) return <div>Loading...</div>;
 
@@ -68,11 +62,7 @@ function App() {
       <Routes>
         <Route
           path="/login"
-          element={
-            <LoginRoute>
-              <LoginPage />
-            </LoginRoute>
-          }
+          element={ userInfo ? <Navigate to="/" replace/> : <LoginPage/>}
         />
 
         <Route element={<PrivateLayout />}>

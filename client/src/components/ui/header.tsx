@@ -61,8 +61,11 @@ export function Header({ title }: HeaderProps) {
           <DropdownMenuContent align="end" className="bg-white">
             <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Hồ sơ</DropdownMenuItem>
-            <DropdownMenuItem>Cài đặt</DropdownMenuItem>
+            <DropdownMenuItem
+              onClick = {() => navigate('/cai-dat')}
+            >
+               Cài đặt
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={logout}>
               Đăng xuất

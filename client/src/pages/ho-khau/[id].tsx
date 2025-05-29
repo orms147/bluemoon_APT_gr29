@@ -22,70 +22,7 @@ import { Input } from "@/components/ui/input"
 import { ChevronLeft, UserPlus, UserMinus } from "lucide-react"
 import type { HoKhau, NhanKhau } from "@/types"
 import { apiClient } from "@/lib/api-client"
-import { GET_HOKHAU_BY_ID_ROUTE } from "@/utils/constant"
-
-// Mock data
-const mockHoKhau: Record<string, HoKhau> = {
-  "HK001": {
-    id: "1",
-    maHoKhau: "HK001",
-    tenChuHo: "Nguyễn Văn A",
-    diaChi: "P.1201, Tòa A, BlueMoon",
-    soThanhVien: 4,
-    ngayLap: "2022-01-15",
-  },
-  "HK002": {
-    id: "2",
-    maHoKhau: "HK002",
-    tenChuHo: "Trần Thị B",
-    diaChi: "P.1502, Tòa B, BlueMoon",
-    soThanhVien: 3,
-    ngayLap: "2022-02-20",
-  },
-}
-
-const mockNhanKhau: NhanKhau[] = [
-  {
-    id: "1",
-    maNhanKhau: "NK001",
-    hoTen: "Nguyễn Văn A",
-    ngaySinh: "1980-05-15",
-    gioiTinh: "Nam",
-    cccd: "012345678901",
-    hoKhauId: "1",
-    quanHe: "Chủ hộ",
-  },
-  {
-    id: "2",
-    maNhanKhau: "NK002",
-    hoTen: "Nguyễn Thị X",
-    ngaySinh: "1985-08-20",
-    gioiTinh: "Nữ",
-    cccd: "012345678902",
-    hoKhauId: "1",
-    quanHe: "Vợ",
-  },
-  {
-    id: "3",
-    maNhanKhau: "NK003",
-    hoTen: "Nguyễn Văn Y",
-    ngaySinh: "2010-03-10",
-    gioiTinh: "Nam",
-    cccd: "012345678903",
-    hoKhauId: "1",
-    quanHe: "Con",
-  },
-  {
-    id: "4",
-    maNhanKhau: "NK004",
-    hoTen: "Nguyễn Thị Z",
-    ngaySinh: "2015-12-25",
-    gioiTinh: "Nữ",
-    cccd: "012345678904",
-    hoKhauId: "1",
-    quanHe: "Con",
-  },
-]
+import { ADD_TO_HOKHAU_ROUTE, GET_ALL_NHANKHAU_ROUTE, GET_HOKHAU_BY_ID_ROUTE } from "@/utils/constant"
 
 export function HoKhauDetailPage() {
   const { maHoKhau } = useParams<{ maHoKhau: string }>()
@@ -95,41 +32,68 @@ export function HoKhauDetailPage() {
   const [availableNhanKhau, setAvailableNhanKhau] = useState<NhanKhau[]>([])
   const [selectedNhanKhauId, setSelectedNhanKhauId] = useState<string>("")
   const [quanHe, setQuanHe] = useState<string>("")
-
-  useEffect(() => {
-    if (!maHoKhau) return 
-
-    const getDetailHk = async() => {
-      try {
-        const response = await apiClient.get(
-          `${GET_HOKHAU_BY_ID_ROUTE}/${maHoKhau}`, 
-          {withCredentials: true}
-        )
-        if (response.status === 200) {
-          const hk = response.data
-          setHoKhau(hk)
-          setNhanKhauList(mockNhanKhau.filter((nk) => nk.hoKhauId === maHoKhau))
-          setAvailableNhanKhau(mockNhanKhau.filter((nk) => !nk.hoKhauId))
-        }
-      } catch (error) {
-        console.error("Lỗi khi lấy chi tiết hộ khẩu: ", error);
-      }
+  const fetchData = async() => {
+    if (!maHoKhau) return
+    try {
+      const [getDetailHk, getListNhanKhauAvailable] = await Promise.all([
+        apiClient.get(`${GET_HOKHAU_BY_ID_ROUTE}/${maHoKhau}`, {withCredentials: true}),
+        apiClient.get(`${GET_ALL_NHANKHAU_ROUTE}`, {withCredentials: true})
+      ])
+      const hk = getDetailHk.data
+      const listNk = getListNhanKhauAvailable.data as NhanKhau[]
+      setHoKhau(hk)
+      setNhanKhauList(listNk.filter((nk) => nk.hoKhauId === maHoKhau))
+      setAvailableNhanKhau(listNk.filter((nk) => !nk.hoKhauId))
+    } catch (error) {
+      console.error("Lỗi khi lấy chi tiết hộ khẩu: ", error);
     }
-    getDetailHk()
-  }, [maHoKhau])
-
-  const handleAddNhanKhau = (e: React.FormEvent) => {
-    e.preventDefault()
-    // In a real app, you would update the database
-    console.log("Add resident:", { nhanKhauId: selectedNhanKhauId, quanHe })
-    setIsAddDialogOpen(false)
-    setSelectedNhanKhauId("")
-    setQuanHe("")
   }
 
-  const handleRemoveNhanKhau = (nhanKhauId: string) => {
-    // In a real app, you would update the database
-    console.log("Remove resident:", nhanKhauId)
+  useEffect(() => {
+    fetchData()
+  }, [maHoKhau])
+
+  const handleAddNhanKhau = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      const response = await apiClient.put(
+        `${ADD_TO_HOKHAU_ROUTE}/${selectedNhanKhauId}`,
+        {
+          hoKhauId: maHoKhau,
+          quanHe: quanHe
+        },
+        {withCredentials: true}
+      );
+      if (response.status === 200){
+        setIsAddDialogOpen(false)
+        setSelectedNhanKhauId("")
+        setQuanHe("")
+        await fetchData()
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const handleRemoveNhanKhau = async (maNhanKhau: string) => {
+    try {
+      const response = await apiClient.put(
+        `${ADD_TO_HOKHAU_ROUTE}/${maNhanKhau}`,
+        {
+          hoKhauId: "",
+          quanHe: ""
+        },
+        {withCredentials: true}
+      );
+      if (response.status === 200){        
+        setIsAddDialogOpen(false)
+        setSelectedNhanKhauId("")
+        setQuanHe("")
+        await fetchData()
+      }
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   if (!hoKhau) {
@@ -212,7 +176,7 @@ export function HoKhauDetailPage() {
                       >
                         <option value="">Chọn nhân khẩu</option>
                         {availableNhanKhau.map((nk) => (
-                          <option key={nk.id} value={nk.id}>
+                          <option key={nk.maNhanKhau} value={nk.maNhanKhau}>
                             {nk.hoTen} - {nk.maNhanKhau}
                           </option>
                         ))}
@@ -251,7 +215,7 @@ export function HoKhauDetailPage() {
               <TableBody>
                 {nhanKhauList.length > 0 ? (
                   nhanKhauList.map((nhanKhau) => (
-                    <TableRow key={nhanKhau.id}>
+                    <TableRow key={nhanKhau.maNhanKhau}>
                       <TableCell className="font-medium">{nhanKhau.maNhanKhau}</TableCell>
                       <TableCell>{nhanKhau.hoTen}</TableCell>
                       <TableCell>{nhanKhau.quanHe}</TableCell>
@@ -259,7 +223,7 @@ export function HoKhauDetailPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleRemoveNhanKhau(nhanKhau.id)}
+                          onClick={() => handleRemoveNhanKhau(nhanKhau.maNhanKhau)}
                           disabled={nhanKhau.quanHe === "Chủ hộ"}
                         >
                           <UserMinus className="h-4 w-4 text-destructive" />

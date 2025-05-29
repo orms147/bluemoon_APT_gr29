@@ -4,6 +4,8 @@ export const AUTH_ROUTES = "api/auth";
 export const LOGIN_ROUTE = `${AUTH_ROUTES}/login`;
 export const LOGOUT_ROUTE = `${AUTH_ROUTES}/logout`;
 export const GET_USER_INFO_ROUTE = `${AUTH_ROUTES}/user-info`;
+export const UPDATE_USER_INFO_ROUTE = `${AUTH_ROUTES}/update-user-info`;
+export const CHANGE_PASSWORD_ROUTE = `${AUTH_ROUTES}/change-password`;
 
 export const HOKHAU_ROUTES = "api/ho-khau";
 export const GET_HOKHAU_BY_ID_ROUTE = `${HOKHAU_ROUTES}`;
@@ -14,7 +16,9 @@ export const DELETE_HOKHAU_ROUTE = `${HOKHAU_ROUTES}/xoa-ho-khau`;
 
 export const NHANKHAU_ROUTES = "api/nhan-khau";
 export const GET_ALL_NHANKHAU_ROUTE = `${NHANKHAU_ROUTES}/danh-sach-nhan-khau`;
+export const GET_ALL_AVAILABLE_NHANKHAU_ROUTE = `${NHANKHAU_ROUTES}/danh-sach-nhan-khau-thoa-man`;
 export const ADD_NHANKHAU_ROUTE = `${NHANKHAU_ROUTES}/them-nhan-khau`;
+export const ADD_TO_HOKHAU_ROUTE = `${NHANKHAU_ROUTES}/them-vao-ho-khau`;
 export const PUT_NHANKHAU_ROUTE = `${NHANKHAU_ROUTES}/cap-nhat-nhan-khau`;
 export const DELETE_NHANKHAU_ROUTE =  `${NHANKHAU_ROUTES}/xoa-nhan-khau`;
 
