@@ -5,6 +5,7 @@ export const LOGIN_ROUTE = `${AUTH_ROUTES}/login`;
 export const LOGOUT_ROUTE = `${AUTH_ROUTES}/logout`;
 export const GET_USER_INFO_ROUTE = `${AUTH_ROUTES}/user-info`;
 export const UPDATE_USER_INFO_ROUTE = `${AUTH_ROUTES}/update-user-info`;
+export const UPLOAD_AVATAR_ROUTE = `${AUTH_ROUTES}/upload-avatar`;
 export const CHANGE_PASSWORD_ROUTE = `${AUTH_ROUTES}/change-password`;
 
 export const HOKHAU_ROUTES = "api/ho-khau";

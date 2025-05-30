@@ -1,33 +1,31 @@
 "use client"
-
-import type React from "react"
-
+import * as React from "react"
 import { useState, useEffect } from "react"
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog"
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Label } from "@/components/ui/label"
-import { Plus, MoreHorizontal, Search } from 'lucide-react'
+import { Plus, MoreHorizontal, Search } from "lucide-react"
 import type { TamTruTamVang, NhanKhau } from "@/types"
 import { GET_ALL_TTTV_ROUTE, GET_ALL_NHANKHAU_ROUTE, ADD_TTTV_ROUTE, PUT_TTTV_ROUTE, DELETE_TTTV_ROUTE } from '@/utils/constant'
-import { apiClient } from '@/lib/api-client' 
+import { apiClient } from '@/lib/api-client'
 
 export function TamTruTamVangPage() {
-  const [tamTruTamVangList,setTamTruTamVangList] = useState<TamTruTamVang[]>([])
+  const [tamTruTamVangList, setTamTruTamVangList] = useState<TamTruTamVang[]>([])
   const [nhanKhauList, setNhanKhauList] = useState<NhanKhau[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false)
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false)
+  const [detailTamTruTamVang, setDetailTamTruTamVang] = useState<TamTruTamVang | null>(null)
   const [selectedTamTruTamVang, setSelectedTamTruTamVang] = useState<Partial<TamTruTamVang>>({
     maDangKy: "",
     nhanKhauId: "",
@@ -48,27 +46,28 @@ export function TamTruTamVangPage() {
   })
 
   useEffect(() => {
-    const fetchData = async() => {
+    const fetchData = async () => {
       try {
         const [getListNhanKhau, getListTttv] = await Promise.all([
-          apiClient.get(GET_ALL_NHANKHAU_ROUTE, {withCredentials: true}),
-          apiClient.get(GET_ALL_TTTV_ROUTE, {withCredentials: true}),
+          apiClient.get(GET_ALL_NHANKHAU_ROUTE, { withCredentials: true }),
+          apiClient.get(GET_ALL_TTTV_ROUTE, { withCredentials: true }),
         ])
         setNhanKhauList(getListNhanKhau.data)
         setTamTruTamVangList(getListTttv.data)
-      } catch (error){
-        console.log("Lỗi khi fetch data: ", error) 
+      } catch (error) {
+        console.log("Lỗi khi fetch data: ", error)
       }
     }
-
     fetchData()
   }, [])
 
   const filteredTamTruTamVang = tamTruTamVangList.filter(
     (tamTruTamVang) =>
       tamTruTamVang.maDangKy.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (nhanKhauList.find(nhanKhau => nhanKhau.maNhanKhau === tamTruTamVang.nhanKhauId)?.hoTen || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tamTruTamVang.diaChi.toLowerCase().includes(searchTerm.toLowerCase()),
+      (nhanKhauList.find(nhanKhau => nhanKhau.maNhanKhau === tamTruTamVang.nhanKhauId)?.hoTen || "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      tamTruTamVang.diaChi.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -90,15 +89,9 @@ export function TamTruTamVangPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsDialogOpen(false)
-    // Reset form
     try {
-      const response = await apiClient.post(
-        ADD_TTTV_ROUTE,
-        newTamTruTamVang,
-        {withCredentials: true}
-      )
-      if (response.status === 201){
-        console.log(response.data)
+      const response = await apiClient.post(ADD_TTTV_ROUTE, newTamTruTamVang, { withCredentials: true })
+      if (response.status === 201) {
         setTamTruTamVangList([...tamTruTamVangList, response.data])
         setNewTamTruTamVang({
           maDangKy: "",
@@ -111,19 +104,21 @@ export function TamTruTamVangPage() {
         })
       }
     } catch (error) {
-      console.log(error);
-    } 
+      console.log(error)
+    }
   }
 
-  const handleUpdate = async (maDangky: string) => {
-    try  {
+  const handleUpdate = async (maDangKy: string) => {
+    try {
       const response = await apiClient.put(
-        `${PUT_TTTV_ROUTE}/${maDangky}`,
+        `${PUT_TTTV_ROUTE}/${maDangKy}`,
         selectedTamTruTamVang,
-        {withCredentials: true}
+        { withCredentials: true }
       )
-      if (response.status === 200){
-        setTamTruTamVangList(tamTruTamVangList.map((tttv) => tttv.maDangKy === maDangky ? {...tttv, ...selectedTamTruTamVang} : tttv))
+      if (response.status === 200) {
+        setTamTruTamVangList((prev) =>
+          prev.map((tttv) => tttv.maDangKy === maDangKy ? { ...tttv, ...selectedTamTruTamVang } : tttv)
+        )
         setIsUpdateDialogOpen(false)
       }
     } catch (error) {
@@ -133,21 +128,25 @@ export function TamTruTamVangPage() {
 
   const handleDelete = async (maDangKy: string) => {
     try {
-      const response = await apiClient.delete(
-        `${DELETE_TTTV_ROUTE}/${maDangKy}`,
-        {withCredentials: true}
-      )
-      if (response.status === 200){
+      const response = await apiClient.delete(`${DELETE_TTTV_ROUTE}/${maDangKy}`, { withCredentials: true })
+      if (response.status === 200) {
         setTamTruTamVangList(tamTruTamVangList.filter((tttv) => tttv.maDangKy !== maDangKy))
-        console.log("Xóa phiếu đăng ký thành công")
+        console.log("Xóa đăng ký thành công")
       }
-    } catch (error){
+    } catch (error) {
       console.log(error)
     }
   }
 
+  // Hàm xem chi tiết: sẽ mở Dialog chi tiết
+  const handleOpenDetail = (item: TamTruTamVang) => {
+    setDetailTamTruTamVang(item)
+    setIsDetailDialogOpen(true)
+  }
+
   return (
     <div className="space-y-4">
+      {/* Phần thêm mới & tìm kiếm */}
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight">Quản lý Tạm trú/Tạm vắng</h2>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -161,7 +160,7 @@ export function TamTruTamVangPage() {
             <form onSubmit={handleSubmit}>
               <DialogHeader>
                 <DialogTitle>Thêm đăng ký tạm trú/tạm vắng</DialogTitle>
-                <DialogDescription>Nhập thông tin đăng ký mới vào form bên dưới</DialogDescription>
+                <DialogDescription>Nhập thông tin đăng ký mới</DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-4 items-center gap-4">
@@ -186,11 +185,11 @@ export function TamTruTamVangPage() {
                     name="nhanKhauId"
                     value={newTamTruTamVang.nhanKhauId}
                     onChange={handleInputChange}
-                    className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                     required
                   >
                     <option value="">Chọn nhân khẩu</option>
-                    {Object.values(nhanKhauList).map((nhanKhau) => (
+                    {nhanKhauList.map((nhanKhau) => (
                       <option key={nhanKhau.maNhanKhau} value={nhanKhau.maNhanKhau}>
                         {nhanKhau.hoTen} - {nhanKhau.maNhanKhau}
                       </option>
@@ -206,7 +205,7 @@ export function TamTruTamVangPage() {
                     name="loai"
                     value={newTamTruTamVang.loai}
                     onChange={handleInputChange}
-                    className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                     required
                   >
                     <option value="Tạm trú">Tạm trú</option>
@@ -274,7 +273,7 @@ export function TamTruTamVangPage() {
             </form>
           </DialogContent>
         </Dialog>
-        
+
         <Dialog open={isUpdateDialogOpen} onOpenChange={setIsUpdateDialogOpen}>
           <DialogContent className="sm:max-w-[500px]">
             <form onSubmit={(e) => e.preventDefault()}>
@@ -305,11 +304,11 @@ export function TamTruTamVangPage() {
                     name="nhanKhauId"
                     value={selectedTamTruTamVang.nhanKhauId}
                     onChange={handleUpdateInputChange}
-                    className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                     required
                   >
                     <option value="">Chọn nhân khẩu</option>
-                    {Object.values(nhanKhauList).map((nhanKhau) => (
+                    {nhanKhauList.map((nhanKhau) => (
                       <option key={nhanKhau.maNhanKhau} value={nhanKhau.maNhanKhau}>
                         {nhanKhau.hoTen} - {nhanKhau.maNhanKhau}
                       </option>
@@ -325,7 +324,7 @@ export function TamTruTamVangPage() {
                     name="loai"
                     value={selectedTamTruTamVang.loai}
                     onChange={handleUpdateInputChange}
-                    className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                     required
                   >
                     <option value="Tạm trú">Tạm trú</option>
@@ -388,9 +387,7 @@ export function TamTruTamVangPage() {
                 </div>
               </div>
               <DialogFooter>
-                <Button
-                  onClick = {() => handleUpdate(selectedTamTruTamVang.maDangKy!)}
-                >
+                <Button onClick={() => handleUpdate(selectedTamTruTamVang.maDangKy!)}>
                   Cập nhật
                 </Button>
               </DialogFooter>
@@ -428,7 +425,9 @@ export function TamTruTamVangPage() {
               filteredTamTruTamVang.map((tamTruTamVang) => (
                 <TableRow key={tamTruTamVang.maDangKy}>
                   <TableCell className="font-medium">{tamTruTamVang.maDangKy}</TableCell>
-                  <TableCell>{nhanKhauList.find(nhanKhau => nhanKhau.maNhanKhau == tamTruTamVang.nhanKhauId)?.hoTen || "N/A"}</TableCell>
+                  <TableCell>
+                    {nhanKhauList.find(nhanKhau => nhanKhau.maNhanKhau === tamTruTamVang.nhanKhauId)?.hoTen || "N/A"}
+                  </TableCell>
                   <TableCell>{tamTruTamVang.loai}</TableCell>
                   <TableCell>{new Date(tamTruTamVang.tuNgay).toLocaleDateString("vi-VN")}</TableCell>
                   <TableCell>{new Date(tamTruTamVang.denNgay).toLocaleDateString("vi-VN")}</TableCell>
@@ -443,9 +442,11 @@ export function TamTruTamVangPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>Xem chi tiết</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleOpenDetail(tamTruTamVang)}>
+                          Xem chi tiết
+                        </DropdownMenuItem>
                         <DropdownMenuItem
-                          onClick = {() => {
+                          onClick={() => {
                             setSelectedTamTruTamVang({
                               maDangKy: tamTruTamVang.maDangKy,
                               nhanKhauId: tamTruTamVang.nhanKhauId,
@@ -460,9 +461,9 @@ export function TamTruTamVangPage() {
                         >
                           Sửa
                         </DropdownMenuItem>
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                           className="text-destructive"
-                          onClick = {() => handleDelete(tamTruTamVang.maDangKy)}
+                          onClick={() => handleDelete(tamTruTamVang.maDangKy)}
                         >
                           Xóa
                         </DropdownMenuItem>
@@ -481,6 +482,63 @@ export function TamTruTamVangPage() {
           </TableBody>
         </Table>
       </div>
+
+      {/* Dialog xem chi tiết */}
+      <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Chi tiết đăng ký tạm trú/tạm vắng</DialogTitle>
+            <DialogDescription>
+              Thông tin chi tiết về đăng ký
+            </DialogDescription>
+          </DialogHeader>
+
+          {detailTamTruTamVang && (
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right font-medium">Mã đăng ký:</Label>
+                <div className="col-span-3">{detailTamTruTamVang.maDangKy}</div>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right font-medium">Nhân khẩu:</Label>
+                <div className="col-span-3">
+                  {nhanKhauList.find(nhanKhau => nhanKhau.maNhanKhau === detailTamTruTamVang.nhanKhauId)?.hoTen || "N/A"}
+                </div>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right font-medium">Loại:</Label>
+                <div className="col-span-3">{detailTamTruTamVang.loai}</div>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right font-medium">Từ ngày:</Label>
+                <div className="col-span-3">
+                  {new Date(detailTamTruTamVang.tuNgay).toLocaleDateString("vi-VN")}
+                </div>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right font-medium">Đến ngày:</Label>
+                <div className="col-span-3">
+                  {new Date(detailTamTruTamVang.denNgay).toLocaleDateString("vi-VN")}
+                </div>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right font-medium">Địa chỉ:</Label>
+                <div className="col-span-3">{detailTamTruTamVang.diaChi}</div>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right font-medium">Lý do:</Label>
+                <div className="col-span-3">{detailTamTruTamVang.lyDo}</div>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDetailDialogOpen(false)}>
+              Đóng
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

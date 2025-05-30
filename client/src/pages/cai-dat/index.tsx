@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useAppStore } from "@/store" 
 import { apiClient } from "@/lib/api-client"
-import { UPDATE_USER_INFO_ROUTE, CHANGE_PASSWORD_ROUTE } from "@/utils/constant"
+import { UPDATE_USER_INFO_ROUTE, CHANGE_PASSWORD_ROUTE, UPLOAD_AVATAR_ROUTE } from "@/utils/constant"
 
 export function CaiDatPage() {
   const {userInfo, setUserInfo} = useAppStore()
@@ -17,12 +17,14 @@ export function CaiDatPage() {
   const [isPasswordLoading, setIsPasswordLoading] = useState(false)
   const [message, setMessage] = useState("")
   const [passwordMessage, setPasswordMessage] = useState("")
+  const fileInputRef = useRef<HTMLInputElement>(null)
   
   const [user, setUser] = useState({
     fullname: userInfo?.fullname,
     username: userInfo?.username,
     email: userInfo?.email,
-    phone: userInfo?.phone
+    phone: userInfo?.phone,
+    avatar: userInfo?.avatar
   })
 
   // ✅ Thêm state cho form đổi mật khẩu
@@ -38,6 +40,57 @@ export function CaiDatPage() {
       ...prev,
       [name]: value,
     }))
+  }
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      setMessage("Vui lòng chọn file ảnh")
+      return
+    }
+
+    // Check file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setMessage("Kích thước file không được vượt quá 5MB")
+      return
+    }
+
+    const formData = new FormData()
+    formData.append('avatar', file)
+
+    try {
+      setIsLoading(true)
+      const response = await apiClient.post(UPLOAD_AVATAR_ROUTE, formData, {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+
+      if (response.status === 200) {
+        setUserInfo({
+          ...userInfo!,
+          avatar: response.data.avatar
+        })
+        setUser(prev => ({
+          ...prev,
+          avatar: response.data.avatar
+        }))
+        setMessage("Cập nhật ảnh đại diện thành công!")
+      }
+    } catch (error: any) {
+      console.log(error)
+      setMessage(error.response?.data?.message || "Có lỗi xảy ra khi cập nhật ảnh đại diện.")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   // ✅ Thêm handler cho form đổi mật khẩu
@@ -132,13 +185,29 @@ export function CaiDatPage() {
               <CardContent className="space-y-4">
                 <div className="flex items-center space-x-4">
                   <Avatar className="h-20 w-20">
-                    <AvatarImage src="/placeholder-avatar.jpg" alt="Avatar" />
-                    <AvatarFallback>QT</AvatarFallback>
+                    <AvatarImage src={user.avatar || "/placeholder-avatar.jpg"} alt="Avatar" />
+                    <AvatarFallback>{user.fullname?.[0]?.toUpperCase() || 'U'}</AvatarFallback>
                   </Avatar>
-                  <div>
-                    <Button variant="outline" size="sm">
-                      Thay đổi ảnh
+                  <div className="space-y-2">
+                    <Button 
+                      type="button"
+                      variant="outline" 
+                      size="sm"
+                      onClick={handleAvatarClick}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? "Đang tải lên..." : "Thay đổi ảnh"}
                     </Button>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleAvatarChange}
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      Cho phép PNG, JPG hoặc GIF. Tối đa 5MB.
+                    </p>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">

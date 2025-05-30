@@ -1,7 +1,6 @@
-
 "use client"
 
-import type React from "react"
+import * as React from "react"
 
 import { useState, useEffect } from "react"
 import { useParams, Link } from "react-router-dom"
@@ -32,12 +31,12 @@ export function HoKhauDetailPage() {
   const [availableNhanKhau, setAvailableNhanKhau] = useState<NhanKhau[]>([])
   const [selectedNhanKhauId, setSelectedNhanKhauId] = useState<string>("")
   const [quanHe, setQuanHe] = useState<string>("")
-  const fetchData = async() => {
+  const fetchData = async () => {
     if (!maHoKhau) return
     try {
       const [getDetailHk, getListNhanKhauAvailable] = await Promise.all([
-        apiClient.get(`${GET_HOKHAU_BY_ID_ROUTE}/${maHoKhau}`, {withCredentials: true}),
-        apiClient.get(`${GET_ALL_NHANKHAU_ROUTE}`, {withCredentials: true})
+        apiClient.get(`${GET_HOKHAU_BY_ID_ROUTE}/${maHoKhau}`, { withCredentials: true }),
+        apiClient.get(`${GET_ALL_NHANKHAU_ROUTE}`, { withCredentials: true })
       ])
       const hk = getDetailHk.data
       const listNk = getListNhanKhauAvailable.data as NhanKhau[]
@@ -55,6 +54,16 @@ export function HoKhauDetailPage() {
 
   const handleAddNhanKhau = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (!hoKhau) return
+
+    // Kiểm tra số thành viên hiện tại (đã bao gồm cả chủ hộ)
+    if (nhanKhauList.length >= hoKhau.soThanhVien) {
+      alert(`Không thể thêm thành viên. Số thành viên đã đạt giới hạn của hộ khẩu (${hoKhau.soThanhVien} người)!`)
+      return
+    }
+
+
     try {
       const response = await apiClient.put(
         `${ADD_TO_HOKHAU_ROUTE}/${selectedNhanKhauId}`,
@@ -62,9 +71,9 @@ export function HoKhauDetailPage() {
           hoKhauId: maHoKhau,
           quanHe: quanHe
         },
-        {withCredentials: true}
+        { withCredentials: true }
       );
-      if (response.status === 200){
+      if (response.status === 200) {
         setIsAddDialogOpen(false)
         setSelectedNhanKhauId("")
         setQuanHe("")
@@ -83,9 +92,9 @@ export function HoKhauDetailPage() {
           hoKhauId: "",
           quanHe: ""
         },
-        {withCredentials: true}
+        { withCredentials: true }
       );
-      if (response.status === 200){        
+      if (response.status === 200) {
         setIsAddDialogOpen(false)
         setSelectedNhanKhauId("")
         setQuanHe("")

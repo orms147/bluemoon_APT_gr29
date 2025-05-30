@@ -37,6 +37,10 @@ const PhieuNopSchema = new mongoose.Schema({
     },
     ghiChu: {
         type: String, 
+    },
+    daThu: {
+        type: Boolean,
+        default: false
     }
 });
 

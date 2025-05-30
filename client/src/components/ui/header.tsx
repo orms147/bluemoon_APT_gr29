@@ -21,57 +21,52 @@ interface HeaderProps {
 
 export function Header({ title }: HeaderProps) {
   const navigate = useNavigate()
-  const {setUserInfo} = useAppStore()
+  const { userInfo, clearUserInfo } = useAppStore()
 
   const logout = async () => {
-      try {
-        const res = await apiClient.post(
-          LOGOUT_ROUTE,
-          {},
-          {withCredentials: true}
-        );
-        if (res.status == 200){
-          setUserInfo(undefined as any)
-          navigate('/login')
-        }
-      } catch (error) {
-        console.error(error)
-      }
+    try {
+      await apiClient.post(LOGOUT_ROUTE, {}, { withCredentials: true })
+      clearUserInfo()
+      navigate('/login')
+    } catch (error: any) {
+      console.log(error)
     }
+  }
+
   return (
-    <header className="flex h-14 items-center gap-4 border-b bg-background px-6">
-      <h1 className="text-xl font-semibold">{title}</h1>
-      <div className="ml-auto flex items-center gap-4">
-        <form className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input type="search" placeholder="Tìm kiếm..." className="w-64 rounded-full bg-background pl-8" />
-        </form>
-        <Button variant="ghost" size="icon" className="rounded-full" aria-label="Thông báo">
-          <Bell className="h-5 w-5" />
-        </Button>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-              <Avatar>
-                <AvatarImage src="/placeholder-avatar.jpg" alt="Avatar" />
-                <AvatarFallback>QT</AvatarFallback>
-              </Avatar>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="bg-white">
-            <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick = {() => navigate('/cai-dat')}
-            >
-               Cài đặt
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={logout}>
-              Đăng xuất
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-14 items-center justify-between">
+        <div className="flex items-center gap-2">
+          <h1 className="text-xl font-semibold">{title}</h1>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon">
+            <Bell className="h-4 w-4" />
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                <Avatar>
+                  <AvatarImage src={userInfo?.avatar || "/placeholder-avatar.jpg"} alt="Avatar" />
+                  <AvatarFallback>{userInfo?.fullname?.[0]?.toUpperCase() || 'U'}</AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-white">
+              <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick = {() => navigate('/cai-dat')}
+              >
+                 Cài đặt
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={logout}>
+                Đăng xuất
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
     </header>
   )

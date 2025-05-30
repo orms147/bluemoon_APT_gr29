@@ -57,6 +57,7 @@ export interface User {
     ngayNop: string
     nguoiThu: string
     ghiChu?: string
+    daThu?: boolean 
   }
   
   // Temporary residence/absence types
