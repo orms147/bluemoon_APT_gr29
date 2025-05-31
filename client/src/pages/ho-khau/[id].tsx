@@ -54,9 +54,10 @@ export function HoKhauDetailPage() {
 
   const handleAddNhanKhau = async (e: React.FormEvent) => {
     e.preventDefault()
-
+    console.log(nhanKhauList.length)
     if (!hoKhau) return
 
+    // Kiểm tra số thành viên hiện tại (đã bao gồm cả chủ hộ)
     if (nhanKhauList.length >= hoKhau.soThanhVien) {
       alert(`Không thể thêm thành viên. Số thành viên đã đạt giới hạn của hộ khẩu (${hoKhau.soThanhVien} người)!`)
       return
