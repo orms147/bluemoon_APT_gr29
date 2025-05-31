@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useAppStore } from "@/store" 
 import { apiClient } from "@/lib/api-client"
-import { UPDATE_USER_INFO_ROUTE, CHANGE_PASSWORD_ROUTE, UPLOAD_AVATAR_ROUTE } from "@/utils/constant"
+import { UPDATE_USER_INFO_ROUTE, CHANGE_PASSWORD_ROUTE, UPLOAD_AVATAR_ROUTE, HOST } from "@/utils/constant"
 
 export function CaiDatPage() {
   const {userInfo, setUserInfo} = useAppStore()
@@ -27,7 +27,6 @@ export function CaiDatPage() {
     avatar: userInfo?.avatar
   })
 
-  // ✅ Thêm state cho form đổi mật khẩu
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: "",
     newPassword: "",
@@ -93,7 +92,6 @@ export function CaiDatPage() {
     }
   }
 
-  // ✅ Thêm handler cho form đổi mật khẩu
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setPasswordForm((prev) => ({
@@ -185,7 +183,7 @@ export function CaiDatPage() {
               <CardContent className="space-y-4">
                 <div className="flex items-center space-x-4">
                   <Avatar className="h-20 w-20">
-                    <AvatarImage src={user.avatar || "/placeholder-avatar.jpg"} alt="Avatar" />
+                    <AvatarImage src={user.avatar ? `${HOST}/${user.avatar}` : "/placeholder-avatar.jpg"} alt="Avatar" />
                     <AvatarFallback>{user.fullname?.[0]?.toUpperCase() || 'U'}</AvatarFallback>
                   </Avatar>
                   <div className="space-y-2">
@@ -250,7 +248,6 @@ export function CaiDatPage() {
                     />
                   </div>
                 </div>
-                {/* ✅ Thêm thông báo cho cập nhật thông tin */}
                 {message && (
                   <div className={`text-sm ${message.includes('thành công') ? 'text-green-600' : 'text-red-600'}`}>
                     {message}
@@ -309,7 +306,7 @@ export function CaiDatPage() {
                     required 
                   />
                 </div>
-                {/* ✅ Thêm thông báo cho đổi mật khẩu */}
+                {/* Thêm thông báo cho đổi mật khẩu */}
                 {passwordMessage && (
                   <div className={`text-sm ${passwordMessage.includes('thành công') ? 'text-green-600' : 'text-red-600'}`}>
                     {passwordMessage}

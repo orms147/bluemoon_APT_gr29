@@ -1,6 +1,7 @@
 import User from '../models/UserModel.js';
 import jwt from 'jsonwebtoken';
 import {compare} from 'bcrypt';
+import { renameSync } from 'fs';
 
 
 const maxAge = 3 * 24 * 60 * 60 * 1000;
@@ -129,5 +130,31 @@ export const changePassword = async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Server bị lỗi" });
+  }
+}
+
+
+export const addProfileImage = async (req, res, next) => {
+  try {
+        if (!req.file) {
+            return res.status(400).send("File is required");
+        }
+
+        const date = Date.now();
+        let fileName = date + req.file.originalname;
+        renameSync(req.file.path, `uploads/profiles/${fileName}`);
+
+        const updatedUser = await User.findByIdAndUpdate(
+            req.user.userId,
+            {avatar: `uploads/profiles/${fileName}`},
+            {new: true, runValidators: true},
+        );
+
+        return res.status(200).json({
+            avatar: updatedUser.avatar,
+        });
+  } catch(error){
+    console.log(error);
+    res.status(500).json({message: "Server bị lỗi"});
   }
 }
