@@ -2,8 +2,6 @@
 export interface User {
     id: string
     username: string
-    phone: string
-    email: string
     fullName: string
     role: "admin" | "staff"
     avatar?: string
@@ -57,7 +55,6 @@ export interface User {
     ngayNop: string
     nguoiThu: string
     ghiChu?: string
-    daThu?: boolean 
   }
   
   // Temporary residence/absence types
@@ -73,7 +70,7 @@ export interface User {
   }
 
   export interface Activity {
-    _id: string,
+    id: string,
     model: string,
     action: string,
     title: string,
