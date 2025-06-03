@@ -8,6 +8,8 @@ import { Download } from 'lucide-react'
 import { apiClient } from '@/lib/api-client'
 import { GET_ALL_HOKHAU_ROUTE, GET_ALL_NHANKHAU_ROUTE, GET_ALL_TTTV_ROUTE } from "@/utils/constant"
 import { HoKhau, NhanKhau, TamTruTamVang } from '@/types'
+// Import chart components - you'll need to install recharts
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
 function tinhTuoi(ngaySinh: string | Date): number {
   const sinh = new Date(ngaySinh)
@@ -52,6 +54,59 @@ export function ThongKePage() {
 
   const tamTruList = tttvList.filter((tttv) => tttv.loai === "Tạm trú")
   const tamVangList = tttvList.filter((tttv) => tttv.loai === "Tạm vắng")
+
+  // Prepare data for charts
+  const buildingDistribution = [
+    { name: 'Tòa A', value: hoKhauList.filter((hk) => hk.diaChi.includes('Tòa A')).length },
+    { name: 'Tòa B', value: hoKhauList.filter((hk) => hk.diaChi.includes('Tòa B')).length },
+    { name: 'Tòa C', value: hoKhauList.filter((hk) => hk.diaChi.includes('Tòa C')).length },
+  ]
+
+  const ageDistribution = [
+    { name: 'Dưới 18', value: nhanKhauList.filter((nk) => tinhTuoi(nk.ngaySinh) < 18).length },
+    { name: '18-30', value: nhanKhauList.filter((nk) => tinhTuoi(nk.ngaySinh) >= 18 && tinhTuoi(nk.ngaySinh) <= 30).length },
+    { name: '31-50', value: nhanKhauList.filter((nk) => tinhTuoi(nk.ngaySinh) >= 31 && tinhTuoi(nk.ngaySinh) <= 50).length },
+    { name: 'Trên 50', value: nhanKhauList.filter((nk) => tinhTuoi(nk.ngaySinh) > 50).length },
+  ]
+
+  const genderByAge = [
+    { 
+      name: 'Dưới 18', 
+      Nam: nhanKhauList.filter((nk) => tinhTuoi(nk.ngaySinh) < 18 && nk.gioiTinh === "Nam").length,
+      Nữ: nhanKhauList.filter((nk) => tinhTuoi(nk.ngaySinh) < 18 && nk.gioiTinh === "Nữ").length
+    },
+    { 
+      name: '18-30', 
+      Nam: nhanKhauList.filter((nk) => tinhTuoi(nk.ngaySinh) >= 18 && tinhTuoi(nk.ngaySinh) <= 30 && nk.gioiTinh === "Nam").length,
+      Nữ: nhanKhauList.filter((nk) => tinhTuoi(nk.ngaySinh) >= 18 && tinhTuoi(nk.ngaySinh) <= 30 && nk.gioiTinh === "Nữ").length
+    },
+    { 
+      name: '31-50', 
+      Nam: nhanKhauList.filter((nk) => tinhTuoi(nk.ngaySinh) >= 31 && tinhTuoi(nk.ngaySinh) <= 50 && nk.gioiTinh === "Nam").length,
+      Nữ: nhanKhauList.filter((nk) => tinhTuoi(nk.ngaySinh) >= 31 && tinhTuoi(nk.ngaySinh) <= 50 && nk.gioiTinh === "Nữ").length
+    },
+    { 
+      name: 'Trên 50', 
+      Nam: nhanKhauList.filter((nk) => tinhTuoi(nk.ngaySinh) > 50 && nk.gioiTinh === "Nam").length,
+      Nữ: nhanKhauList.filter((nk) => tinhTuoi(nk.ngaySinh) > 50 && nk.gioiTinh === "Nữ").length
+    },
+  ]
+
+  const tamTruTamVangData = [
+    { 
+      name: 'Tạm trú', 
+      'Đang hiệu lực': tamTruList.filter(tt => new Date(tt.denNgay) >= new Date()).length,
+      'Hết hiệu lực': tamTruList.filter(tt => new Date(tt.denNgay) < new Date()).length
+    },
+    { 
+      name: 'Tạm vắng', 
+      'Đang hiệu lực': tamVangList.filter(tv => new Date(tv.denNgay) >= new Date()).length,
+      'Hết hiệu lực': tamVangList.filter(tv => new Date(tv.denNgay) < new Date()).length
+    },
+  ]
+
+  // Colors for charts
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
   const handleExportPDF = () => {
     const printWindow = window.open("", "PrintWindow", "width=1000,height=1000")
@@ -340,6 +395,7 @@ export function ThongKePage() {
       <Tabs defaultValue="dan-cu" className="space-y-4">
         <TabsList>
           <TabsTrigger value="dan-cu">Dân cư</TabsTrigger>
+          <TabsTrigger value="tam-tru-tam-vang">Tạm trú/Tạm vắng</TabsTrigger>
         </TabsList>
         
         <TabsContent value="dan-cu" className="space-y-4">
@@ -388,23 +444,27 @@ export function ThongKePage() {
                 <CardTitle>Phân bố dân cư theo tòa nhà</CardTitle>
                 <CardDescription>Số lượng hộ khẩu theo tòa nhà</CardDescription>
               </CardHeader>
-              <CardContent className="h-[300px] flex items-center justify-center">
-                <div className="text-center">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span>Tòa A:</span>
-                      <span className="font-medium">{hoKhauList.filter((hk) => hk.diaChi.includes('Tòa A')).length} hộ</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>Tòa B:</span>
-                      <span className="font-medium">{hoKhauList.filter((hk) => hk.diaChi.includes('Tòa B')).length} hộ</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>Tòa C:</span>
-                      <span className="font-medium">{hoKhauList.filter((hk) => hk.diaChi.includes('Tòa C')).length} hộ</span>
-                    </div>
-                  </div>
-                </div>
+              <CardContent className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={buildingDistribution}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={true}
+                      label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {buildingDistribution.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value) => [`${value} hộ`, 'Số hộ']} />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
 
@@ -413,30 +473,88 @@ export function ThongKePage() {
                 <CardTitle>Phân bố theo độ tuổi</CardTitle>
                 <CardDescription>Số lượng cư dân theo nhóm tuổi</CardDescription>
               </CardHeader>
-              <CardContent className="h-[300px] flex items-center justify-center">
-                <div className="text-center">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span>Dưới 18 tuổi: </span>
-                      <span className="font-medium ml-1">{nhanKhauList.filter((nk) => tinhTuoi(nk.ngaySinh) < 18).length} người</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>18-30 tuổi: </span>
-                      <span className="font-medium ml-1">{nhanKhauList.filter((nk) => tinhTuoi(nk.ngaySinh) >= 18 && tinhTuoi(nk.ngaySinh) <= 30).length} người</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>31-50 tuổi: </span>
-                      <span className="font-medium ml-1">{nhanKhauList.filter((nk) => tinhTuoi(nk.ngaySinh) >= 31 && tinhTuoi(nk.ngaySinh) <= 50).length} người</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>Trên 50 tuổi: </span>
-                      <span className="font-medium ml-1">{nhanKhauList.filter((nk) => tinhTuoi(nk.ngaySinh) > 50).length} người</span>
-                    </div>
-                  </div>
-                </div>
+              <CardContent className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={ageDistribution}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={true}
+                      label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {ageDistribution.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value) => [`${value} người`, 'Số người']} />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
           </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Phân bố giới tính theo độ tuổi</CardTitle>
+              <CardDescription>Số lượng nam/nữ trong từng nhóm tuổi</CardDescription>
+            </CardHeader>
+            <CardContent className="h-[400px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={genderByAge}
+                  margin={{
+                    top: 20,
+                    right: 30,
+                    left: 20,
+                    bottom: 5,
+                  }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="Nam" fill="#0088FE" />
+                  <Bar dataKey="Nữ" fill="#FF8042" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="tam-tru-tam-vang" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Thống kê tạm trú, tạm vắng</CardTitle>
+              <CardDescription>Số lượng đăng ký tạm trú, tạm vắng theo trạng thái</CardDescription>
+            </CardHeader>
+            <CardContent className="h-[400px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={tamTruTamVangData}
+                  margin={{
+                    top: 20,
+                    right: 30,
+                    left: 20,
+                    bottom: 5,
+                  }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="Đang hiệu lực" fill="#00C49F" />
+                  <Bar dataKey="Hết hiệu lực" fill="#FF8042" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

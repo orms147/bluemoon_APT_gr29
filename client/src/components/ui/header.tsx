@@ -14,6 +14,7 @@ import { apiClient } from '@/lib/api-client'
 import { LOGOUT_ROUTE } from '@/utils/constant'
 import { useAppStore } from '@/store'
 import { useNavigate } from 'react-router-dom'
+import { HOST } from '@/utils/constant'
 
 interface HeaderProps {
   title: string
@@ -47,7 +48,7 @@ export function Header({ title }: HeaderProps) {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                 <Avatar>
-                  <AvatarImage src={userInfo?.avatar || "/placeholder-avatar.jpg"} alt="Avatar" />
+                  <AvatarImage src={`${HOST}/${userInfo?.avatar}`} alt="Avatar" />
                   <AvatarFallback>{userInfo?.fullname?.[0]?.toUpperCase() || 'U'}</AvatarFallback>
                 </Avatar>
               </Button>
