@@ -2,6 +2,7 @@ export const HOST = import.meta.env.VITE_SERVER_URL;
 
 export const AUTH_ROUTES = "api/auth";
 export const LOGIN_ROUTE = `${AUTH_ROUTES}/login`;
+export const REGISTER_ROUTE = `${AUTH_ROUTES}/register`;
 export const LOGOUT_ROUTE = `${AUTH_ROUTES}/logout`;
 export const GET_USER_INFO_ROUTE = `${AUTH_ROUTES}/user-info`;
 export const UPDATE_USER_INFO_ROUTE = `${AUTH_ROUTES}/update-user-info`;

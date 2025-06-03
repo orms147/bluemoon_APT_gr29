@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
@@ -19,38 +19,30 @@ export function LoginPage() {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-
-  const validateLogin = () => {
-    // Bổ sung để kiểm tra đã điền đầy đủ tài khoản, mật khẩu hay chưachưa
-    return true;
-  }
+  const [error, setError] = useState("")
 
   const handleSubmit = async (e: React.FormEvent) => {
-    if (validateLogin()) {
-      e.preventDefault();
-      setIsLoading(true);
+    e.preventDefault()
+    setError("")
+    setIsLoading(true)
 
-      try {
-        const response = await apiClient.post(
-          LOGIN_ROUTE,
-          {username, password},
-          {withCredentials: true}
-        );
-        if (response.data.user.id){
-          setUserInfo(response.data.user)
-          navigate("/")
-        } else {
-          alert("Tài khoản hoặc mật khẩu không đúng")
-        }
-        console.log(response)
-      } catch (error) {
-        console.log(error);
-      } finally {
-        setIsLoading(false);
+    try {
+      const response = await apiClient.post(
+        LOGIN_ROUTE,
+        {username, password},
+        {withCredentials: true}
+      )
+      if (response.data.user.id) {
+        setUserInfo(response.data.user)
+        navigate("/")
+      } else {
+        setError("Tài khoản hoặc mật khẩu không đúng")
       }
+    } catch (error: any) {
+      setError(error.response?.data?.message || "Có lỗi xảy ra khi đăng nhập")
+    } finally {
+      setIsLoading(false)
     }
-
-    
   }
 
   return (
@@ -66,7 +58,9 @@ export function LoginPage() {
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Tên đăng nhập</Label>
+              <Label htmlFor="username">
+                Tên đăng nhập <span className="text-destructive">*</span>
+              </Label>
               <Input
                 id="username"
                 placeholder="Nhập tên đăng nhập"
@@ -76,7 +70,9 @@ export function LoginPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Mật khẩu</Label>
+              <Label htmlFor="password">
+                Mật khẩu <span className="text-destructive">*</span>
+              </Label>
               <Input
                 id="password"
                 type="password"
@@ -86,11 +82,22 @@ export function LoginPage() {
                 required
               />
             </div>
+            {error && (
+              <div className="text-sm text-destructive">
+                {error}
+              </div>
+            )}
           </CardContent>
-          <CardFooter>
-            <Button className="w-full" type="submit" disabled={isLoading} onClick={handleSubmit}>
+          <CardFooter className="flex flex-col gap-4">
+            <Button className="w-full" type="submit" disabled={isLoading}>
               {isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
             </Button>
+            <div className="text-sm text-muted-foreground text-center">
+              Chưa có tài khoản?{" "}
+              <Link to="/register" className="text-primary hover:underline">
+                Đăng ký
+              </Link>
+            </div>
           </CardFooter>
         </form>
       </Card>

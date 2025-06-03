@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { Layout } from "./components/layout";
 import { LoginPage } from "./pages/login";
+import { RegisterPage } from "./pages/register";
 import { DashboardPage } from "./pages/dashboard";
 import { HoKhauPage } from "./pages/ho-khau";
 import { HoKhauDetailPage } from "./pages/ho-khau/[id]";
@@ -13,24 +14,13 @@ import { CaiDatPage } from "./pages/cai-dat";
 import { useAppStore } from "./store";
 import { GET_USER_INFO_ROUTE } from "./utils/constant";
 import { apiClient } from "./lib/api-client";
-import { useEffect, useState, ReactNode } from "react";
+import { useEffect, useState } from "react";
 
-type RouteProps = {
-  children: ReactNode;
-};
-
-const PrivateRoute = ({ children }: RouteProps) => {
+const PrivateLayout = () => {
   const { userInfo } = useAppStore();
-  return userInfo ? children : <Navigate to="/login" replace />;
-}
-
-const PrivateLayout = () => (
-  <PrivateRoute>
-    <Layout>
-      <Outlet />
-    </Layout>
-  </PrivateRoute>
-);
+  if (!userInfo) return <Navigate to="/login" replace />;
+  return <Layout />;
+};
 
 function App() {
   const { userInfo, setUserInfo } = useAppStore();
@@ -62,7 +52,11 @@ function App() {
       <Routes>
         <Route
           path="/login"
-          element={ userInfo ? <Navigate to="/" replace/> : <LoginPage/>}
+          element={userInfo ? <Navigate to="/" replace /> : <LoginPage />}
+        />
+        <Route
+          path="/register"
+          element={userInfo ? <Navigate to="/" replace /> : <RegisterPage />}
         />
 
         <Route element={<PrivateLayout />}>
