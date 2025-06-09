@@ -18,10 +18,17 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { Plus, MoreHorizontal, Search } from 'lucide-react'
+import { Plus, MoreHorizontal, Search, MapPin } from "lucide-react"
 import type { NhanKhau } from "@/types"
 import { apiClient } from "@/lib/api-client"
-import { ADD_NHANKHAU_ROUTE, GET_ALL_NHANKHAU_ROUTE, PUT_NHANKHAU_ROUTE, DELETE_NHANKHAU_ROUTE } from "@/utils/constant"
+import {
+  ADD_NHANKHAU_ROUTE,
+  GET_ALL_NHANKHAU_ROUTE,
+  PUT_NHANKHAU_ROUTE,
+  DELETE_NHANKHAU_ROUTE,
+  GET_ALL_TTTV_ROUTE,
+} from "@/utils/constant"
+import type { TamTruTamVang } from "@/types"
 
 export function NhanKhauPage() {
   const [nhanKhauList, setNhanKhauList] = useState<NhanKhau[]>([])
@@ -44,16 +51,34 @@ export function NhanKhauPage() {
     cccd: "",
   })
 
+  const [tttvList, setTttvList] = useState<TamTruTamVang[]>([])
+
   useEffect(() => {
-    const getAllNk = async() => {
-      const response = await apiClient.get(
-        GET_ALL_NHANKHAU_ROUTE,
-        {withCredentials: true}
-      )
-      setNhanKhauList(response.data)
+    const getAllData = async () => {
+      try {
+        const [nhanKhauRes, tttvRes] = await Promise.all([
+          apiClient.get(GET_ALL_NHANKHAU_ROUTE, { withCredentials: true }),
+          apiClient.get(GET_ALL_TTTV_ROUTE, { withCredentials: true }),
+        ])
+        setNhanKhauList(nhanKhauRes.data)
+        setTttvList(tttvRes.data)
+      } catch (error) {
+        console.log(error)
+      }
     }
-    getAllNk()
-  },[])
+    getAllData()
+  }, [])
+
+  const getTamVangInfo = (maNhanKhau: string) => {
+    const today = new Date()
+    return tttvList.find(
+      (item) =>
+        item.nhanKhauId === maNhanKhau &&
+        item.loai === "Tạm vắng" &&
+        new Date(item.tuNgay) <= today &&
+        new Date(item.denNgay) >= today,
+    )
+  }
 
   const filteredNhanKhau = nhanKhauList.filter(
     (nhanKhau) =>
@@ -82,13 +107,9 @@ export function NhanKhauPage() {
     e.preventDefault()
     setIsDialogOpen(false)
     try {
-      const response = await apiClient.post(
-        ADD_NHANKHAU_ROUTE,
-        newNhanKhau,
-        {withCredentials: true}
-      )
-      if (response.status == 201){
-        console.log("Thêm nhân khẩu mới thành công");
+      const response = await apiClient.post(ADD_NHANKHAU_ROUTE, newNhanKhau, { withCredentials: true })
+      if (response.status == 201) {
+        console.log("Thêm nhân khẩu mới thành công")
         // Reset form
         setNewNhanKhau({
           maNhanKhau: "",
@@ -100,41 +121,36 @@ export function NhanKhauPage() {
         setNhanKhauList((prev) => [...prev, response.data])
       }
       console.log(response)
-    } catch (error){
-      console.log(error);
+    } catch (error) {
+      console.log(error)
     }
-    
   }
 
   const handleUpdate = async (maNhanKhau: string) => {
     try {
-      const response = await apiClient.put(
-        `${PUT_NHANKHAU_ROUTE}/${maNhanKhau}`,
-        currNhanKhau,
-        {withCredentials: true}
-      )
-      if (response.status == 200){
-        setNhanKhauList((prev) => prev.map((item) => item.maNhanKhau === currNhanKhau.maNhanKhau ? {...item, ...currNhanKhau} : item))
+      const response = await apiClient.put(`${PUT_NHANKHAU_ROUTE}/${maNhanKhau}`, currNhanKhau, {
+        withCredentials: true,
+      })
+      if (response.status == 200) {
+        setNhanKhauList((prev) =>
+          prev.map((item) => (item.maNhanKhau === currNhanKhau.maNhanKhau ? { ...item, ...currNhanKhau } : item)),
+        )
         setIsUpdateDialogOpen(false)
       }
-    } catch (error){
-      console.log(error);
+    } catch (error) {
+      console.log(error)
     }
   }
-  
 
-  const handleDelete = async(maNhanKhau : string) => {
-    try { 
-      const response = await apiClient.delete(
-        `${DELETE_NHANKHAU_ROUTE}/${maNhanKhau}`,
-        {withCredentials: true}
-      )
-      if (response.status == 200){
-        console.log("Xóa nhân khẩu thành công");
-        setNhanKhauList((prev) => prev.filter((nhanKhau) => nhanKhau.maNhanKhau !== maNhanKhau));
-      } 
+  const handleDelete = async (maNhanKhau: string) => {
+    try {
+      const response = await apiClient.delete(`${DELETE_NHANKHAU_ROUTE}/${maNhanKhau}`, { withCredentials: true })
+      if (response.status == 200) {
+        console.log("Xóa nhân khẩu thành công")
+        setNhanKhauList((prev) => prev.filter((nhanKhau) => nhanKhau.maNhanKhau !== maNhanKhau))
+      }
     } catch (error) {
-      console.log(error);
+      console.log(error)
     }
   }
 
@@ -314,11 +330,7 @@ export function NhanKhauPage() {
                 </div>
               </div>
               <DialogFooter>
-                <Button 
-                  onClick = {() => handleUpdate(currNhanKhau.maNhanKhau!)}
-                >
-                  Cập nhật
-                </Button>
+                <Button onClick={() => handleUpdate(currNhanKhau.maNhanKhau!)}>Cập nhật</Button>
               </DialogFooter>
             </form>
           </DialogContent>
@@ -353,7 +365,24 @@ export function NhanKhauPage() {
               filteredNhanKhau.map((nhanKhau) => (
                 <TableRow key={nhanKhau.maNhanKhau}>
                   <TableCell className="font-medium">{nhanKhau.maNhanKhau}</TableCell>
-                  <TableCell>{nhanKhau.hoTen}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      {nhanKhau.hoTen}
+                      {getTamVangInfo(nhanKhau.maNhanKhau) && (
+                        <div className="relative group">
+                          <MapPin className="h-4 w-4 text-orange-500" />
+                          <div className="absolute left-0 top-full mt-1 w-48 p-2 bg-black text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity z-50">
+                            {(() => {
+                              const tamVang = getTamVangInfo(nhanKhau.maNhanKhau)
+                              return tamVang
+                                ? `Tạm vắng từ ngày ${new Date(tamVang.tuNgay).toLocaleDateString("vi-VN")} đến ngày ${new Date(tamVang.denNgay).toLocaleDateString("vi-VN")}`
+                                : ""
+                            })()}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </TableCell>
                   <TableCell>{new Date(nhanKhau.ngaySinh).toLocaleDateString("vi-VN")}</TableCell>
                   <TableCell>{nhanKhau.gioiTinh}</TableCell>
                   <TableCell>{nhanKhau.cccd}</TableCell>
@@ -382,14 +411,14 @@ export function NhanKhauPage() {
                               hoTen: nhanKhau.hoTen,
                               ngaySinh: new Date(nhanKhau.ngaySinh).toISOString().split("T")[0],
                               gioiTinh: nhanKhau.gioiTinh,
-                              cccd: nhanKhau.cccd
+                              cccd: nhanKhau.cccd,
                             })
                             setIsUpdateDialogOpen(true)
                           }}
                         >
                           Sửa
                         </DropdownMenuItem>
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                           className="text-destructive"
                           onClick={() => handleDelete(nhanKhau.maNhanKhau)}
                         >
