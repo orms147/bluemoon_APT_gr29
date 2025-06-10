@@ -13,6 +13,8 @@ export function Layout() {
       "/nhan-khau": "Quản lý Nhân khẩu",
       "/khoan-thu": "Quản lý Khoản thu",
       "/thu-phi": "Quản lý Thu phí",
+      "/phuong-tien": "Quản lý Phương tiện",
+      "/phi-gui-xe": "Quản lý Phí gửi xe",
       "/tam-tru-tam-vang": "Quản lý Tạm trú/Tạm vắng",
       "/thong-ke": "Thống kê",
       "/cai-dat": "Cài đặt",
