@@ -18,6 +18,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
+import { FormField } from "@/components/ui/form-field"
 import { Plus, MoreHorizontal, Search, MapPin } from "lucide-react"
 import type { NhanKhau } from "@/types"
 import { apiClient } from "@/lib/api-client"
@@ -28,6 +29,7 @@ import {
   DELETE_NHANKHAU_ROUTE,
   GET_ALL_TTTV_ROUTE,
 } from "@/utils/constant"
+import { ValidationRules, validateForm } from "@/utils/validation"
 import type { TamTruTamVang } from "@/types"
 
 export function NhanKhauPage() {
@@ -35,6 +37,9 @@ export function NhanKhauPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false)
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [updateErrors, setUpdateErrors] = useState<Record<string, string>>({})
+
   const [currNhanKhau, setCurrNhanKhau] = useState<Partial<NhanKhau>>({
     maNhanKhau: "",
     hoTen: "",
@@ -52,6 +57,25 @@ export function NhanKhauPage() {
   })
 
   const [tttvList, setTttvList] = useState<TamTruTamVang[]>([])
+
+  // Validation rules
+  const validationRules = {
+    maNhanKhau: {
+      required: true,
+      label: "Mã nhân khẩu",
+      validation: ValidationRules.code,
+    },
+    hoTen: {
+      required: true,
+      label: "Họ tên",
+      validation: ValidationRules.fullName,
+    },
+    cccd: {
+      required: true,
+      label: "CCCD",
+      validation: ValidationRules.cccd,
+    },
+  }
 
   useEffect(() => {
     const getAllData = async () => {
@@ -93,6 +117,14 @@ export function NhanKhauPage() {
       ...prev,
       [name]: value,
     }))
+
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: "",
+      }))
+    }
   }
 
   const handleUpdateInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -101,10 +133,26 @@ export function NhanKhauPage() {
       ...prev,
       [name]: value,
     }))
+
+    // Clear error when user starts typing
+    if (updateErrors[name]) {
+      setUpdateErrors((prev) => ({
+        ...prev,
+        [name]: "",
+      }))
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Validate form
+    const formErrors = validateForm(newNhanKhau, validationRules)
+    if (Object.keys(formErrors).length > 0) {
+      setErrors(formErrors)
+      return
+    }
+
     setIsDialogOpen(false)
     try {
       const response = await apiClient.post(ADD_NHANKHAU_ROUTE, newNhanKhau, { withCredentials: true })
@@ -118,6 +166,7 @@ export function NhanKhauPage() {
           gioiTinh: "Nam",
           cccd: "",
         })
+        setErrors({})
         setNhanKhauList((prev) => [...prev, response.data])
       }
       console.log(response)
@@ -127,6 +176,13 @@ export function NhanKhauPage() {
   }
 
   const handleUpdate = async (maNhanKhau: string) => {
+    // Validate form
+    const formErrors = validateForm(currNhanKhau, validationRules)
+    if (Object.keys(formErrors).length > 0) {
+      setUpdateErrors(formErrors)
+      return
+    }
+
     try {
       const response = await apiClient.put(`${PUT_NHANKHAU_ROUTE}/${maNhanKhau}`, currNhanKhau, {
         withCredentials: true,
@@ -136,6 +192,7 @@ export function NhanKhauPage() {
           prev.map((item) => (item.maNhanKhau === currNhanKhau.maNhanKhau ? { ...item, ...currNhanKhau } : item)),
         )
         setIsUpdateDialogOpen(false)
+        setUpdateErrors({})
       }
     } catch (error) {
       console.log(error)
@@ -172,35 +229,31 @@ export function NhanKhauPage() {
                 <DialogDescription>Nhập thông tin nhân khẩu mới vào form bên dưới</DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="maNhanKhau" className="text-right">
-                    Mã nhân khẩu
-                  </Label>
-                  <Input
-                    id="maNhanKhau"
-                    name="maNhanKhau"
-                    value={newNhanKhau.maNhanKhau}
-                    onChange={handleInputChange}
-                    className="col-span-3"
-                    required
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="hoTen" className="text-right">
-                    Họ tên
-                  </Label>
-                  <Input
-                    id="hoTen"
-                    name="hoTen"
-                    value={newNhanKhau.hoTen}
-                    onChange={handleInputChange}
-                    className="col-span-3"
-                    required
-                  />
-                </div>
+                <FormField
+                  id="maNhanKhau"
+                  name="maNhanKhau"
+                  label="Mã nhân khẩu"
+                  value={newNhanKhau.maNhanKhau || ""}
+                  onChange={handleInputChange}
+                  required
+                  error={errors.maNhanKhau}
+                  placeholder="Nhập mã nhân khẩu"
+                />
+
+                <FormField
+                  id="hoTen"
+                  name="hoTen"
+                  label="Họ tên"
+                  value={newNhanKhau.hoTen || ""}
+                  onChange={handleInputChange}
+                  required
+                  error={errors.hoTen}
+                  placeholder="Nhập họ và tên"
+                />
+
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="ngaySinh" className="text-right">
-                    Ngày sinh
+                    Ngày sinh <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="ngaySinh"
@@ -212,9 +265,10 @@ export function NhanKhauPage() {
                     required
                   />
                 </div>
+
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="gioiTinh" className="text-right">
-                    Giới tính
+                    Giới tính <span className="text-destructive">*</span>
                   </Label>
                   <select
                     id="gioiTinh"
@@ -229,19 +283,17 @@ export function NhanKhauPage() {
                     <option value="Khác">Khác</option>
                   </select>
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="cccd" className="text-right">
-                    CCCD
-                  </Label>
-                  <Input
-                    id="cccd"
-                    name="cccd"
-                    value={newNhanKhau.cccd}
-                    onChange={handleInputChange}
-                    className="col-span-3"
-                    required
-                  />
-                </div>
+
+                <FormField
+                  id="cccd"
+                  name="cccd"
+                  label="CCCD"
+                  value={newNhanKhau.cccd || ""}
+                  onChange={handleInputChange}
+                  required
+                  error={errors.cccd}
+                  placeholder="Nhập số CCCD (12 chữ số)"
+                />
               </div>
               <DialogFooter>
                 <Button type="submit">Lưu</Button>
@@ -254,39 +306,34 @@ export function NhanKhauPage() {
           <DialogContent className="sm:max-w-[500px]">
             <form onSubmit={(e) => e.preventDefault()}>
               <DialogHeader>
-                <DialogTitle>Cập nhật thông tin nhân khẩu mới</DialogTitle>
+                <DialogTitle>Cập nhật thông tin nhân khẩu</DialogTitle>
                 <DialogDescription>Nhập thông tin cập nhật vào form bên dưới</DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="maNhanKhau" className="text-right">
-                    Mã nhân khẩu
-                  </Label>
-                  <Input
-                    id="maNhanKhau"
-                    name="maNhanKhau"
-                    value={currNhanKhau.maNhanKhau}
-                    disabled
-                    className="col-span-3"
-                    required
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="hoTen" className="text-right">
-                    Họ tên
-                  </Label>
-                  <Input
-                    id="hoTen"
-                    name="hoTen"
-                    value={currNhanKhau.hoTen}
-                    onChange={handleUpdateInputChange}
-                    className="col-span-3"
-                    required
-                  />
-                </div>
+                <FormField
+                  id="maNhanKhau"
+                  name="maNhanKhau"
+                  label="Mã nhân khẩu"
+                  value={currNhanKhau.maNhanKhau || ""}
+                  onChange={handleUpdateInputChange}
+                  disabled
+                  required
+                />
+
+                <FormField
+                  id="hoTen"
+                  name="hoTen"
+                  label="Họ tên"
+                  value={currNhanKhau.hoTen || ""}
+                  onChange={handleUpdateInputChange}
+                  required
+                  error={updateErrors.hoTen}
+                  placeholder="Nhập họ và tên"
+                />
+
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="ngaySinh" className="text-right">
-                    Ngày sinh
+                    Ngày sinh <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="ngaySinh"
@@ -298,9 +345,10 @@ export function NhanKhauPage() {
                     required
                   />
                 </div>
+
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="gioiTinh" className="text-right">
-                    Giới tính
+                    Giới tính <span className="text-destructive">*</span>
                   </Label>
                   <select
                     id="gioiTinh"
@@ -315,19 +363,17 @@ export function NhanKhauPage() {
                     <option value="Khác">Khác</option>
                   </select>
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="cccd" className="text-right">
-                    CCCD
-                  </Label>
-                  <Input
-                    id="cccd"
-                    name="cccd"
-                    value={currNhanKhau.cccd}
-                    onChange={handleUpdateInputChange}
-                    className="col-span-3"
-                    required
-                  />
-                </div>
+
+                <FormField
+                  id="cccd"
+                  name="cccd"
+                  label="CCCD"
+                  value={currNhanKhau.cccd || ""}
+                  onChange={handleUpdateInputChange}
+                  required
+                  error={updateErrors.cccd}
+                  placeholder="Nhập số CCCD (12 chữ số)"
+                />
               </div>
               <DialogFooter>
                 <Button onClick={() => handleUpdate(currNhanKhau.maNhanKhau!)}>Cập nhật</Button>
@@ -335,6 +381,30 @@ export function NhanKhauPage() {
             </form>
           </DialogContent>
         </Dialog>
+      </div>
+
+      <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+        <div className="flex items-center gap-2">
+          <MapPin className="h-5 w-5 text-orange-500" />
+          <div>
+            <h3 className="font-medium text-orange-800">Thông báo tạm vắng</h3>
+            <p className="text-sm text-orange-600">
+              Hiện có{" "}
+              <span className="font-semibold">{nhanKhauList.filter((nk) => getTamVangInfo(nk.maNhanKhau)).length}</span>{" "}
+              nhân khẩu đang trong trạng thái tạm vắng
+              {nhanKhauList.filter((nk) => getTamVangInfo(nk.maNhanKhau)).length > 0 && (
+                <span className="ml-2">
+                  (
+                  {nhanKhauList
+                    .filter((nk) => getTamVangInfo(nk.maNhanKhau))
+                    .map((nk) => nk.hoTen)
+                    .join(", ")}
+                  )
+                </span>
+              )}
+            </p>
+          </div>
+        </div>
       </div>
 
       <div className="flex items-center gap-2">
@@ -413,6 +483,7 @@ export function NhanKhauPage() {
                               gioiTinh: nhanKhau.gioiTinh,
                               cccd: nhanKhau.cccd,
                             })
+                            setUpdateErrors({})
                             setIsUpdateDialogOpen(true)
                           }}
                         >

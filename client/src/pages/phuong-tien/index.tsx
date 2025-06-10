@@ -29,6 +29,8 @@ import {
   GET_ALL_HOKHAU_ROUTE,
   GET_ALL_NHANKHAU_ROUTE,
 } from "@/utils/constant"
+import { ValidationRules, validateForm } from "@/utils/validation.ts"
+import { FormField } from "@/components/ui/form-field.tsx"
 
 export function PhuongTienPage() {
   const [phuongTienList, setPhuongTienList] = useState<PhuongTien[]>([])
@@ -55,6 +57,23 @@ export function PhuongTienPage() {
     ngayDangKy: new Date().toISOString().split("T")[0],
     ghiChu: "",
   })
+
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [updateErrors, setUpdateErrors] = useState<Record<string, string>>({})
+
+  // Validation rules
+  const validationRules = {
+    maPhuongTien: {
+      required: true,
+      label: "Mã phương tiện",
+      validation: ValidationRules.code,
+    },
+    bienSo: {
+      required: true,
+      label: "Biển số",
+      validation: ValidationRules.licensePlate,
+    },
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -96,6 +115,14 @@ export function PhuongTienPage() {
       [name]: value,
     }))
 
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: "",
+      }))
+    }
+
     // Reset tên chủ xe khi thay đổi hộ khẩu
     if (name === "maHoKhau") {
       setNewPhuongTien((prev) => ({
@@ -113,6 +140,14 @@ export function PhuongTienPage() {
       [name]: value,
     }))
 
+    // Clear error when user starts typing
+    if (updateErrors[name]) {
+      setUpdateErrors((prev) => ({
+        ...prev,
+        [name]: "",
+      }))
+    }
+
     // Reset tên chủ xe khi thay đổi hộ khẩu
     if (name === "maHoKhau") {
       setCurrPhuongTien((prev) => ({
@@ -125,6 +160,14 @@ export function PhuongTienPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Validate form
+    const formErrors = validateForm(newPhuongTien, validationRules)
+    if (Object.keys(formErrors).length > 0) {
+      setErrors(formErrors)
+      return
+    }
+
     setIsDialogOpen(false)
     try {
       const response = await apiClient.post(ADD_PHUONGTIEN_ROUTE, newPhuongTien, { withCredentials: true })
@@ -139,6 +182,7 @@ export function PhuongTienPage() {
           ngayDangKy: new Date().toISOString().split("T")[0],
           ghiChu: "",
         })
+        setErrors({})
       }
     } catch (error) {
       console.log(error)
@@ -146,6 +190,13 @@ export function PhuongTienPage() {
   }
 
   const handleUpdate = async (maPhuongTien: string) => {
+    // Validate form
+    const formErrors = validateForm(currPhuongTien, validationRules)
+    if (Object.keys(formErrors).length > 0) {
+      setUpdateErrors(formErrors)
+      return
+    }
+
     try {
       const response = await apiClient.put(`${PUT_PHUONGTIEN_ROUTE}/${maPhuongTien}`, currPhuongTien, {
         withCredentials: true,
@@ -155,6 +206,7 @@ export function PhuongTienPage() {
           prev.map((item) => (item.maPhuongTien === maPhuongTien ? { ...item, ...currPhuongTien } : item)),
         )
         setIsUpdateDialogOpen(false)
+        setUpdateErrors({})
       }
     } catch (error) {
       console.log(error)
@@ -195,16 +247,15 @@ export function PhuongTienPage() {
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="maPhuongTien" className="text-right">
-                    Mã phương tiện
-                  </Label>
-                  <Input
+                  <FormField
                     id="maPhuongTien"
                     name="maPhuongTien"
-                    value={newPhuongTien.maPhuongTien}
+                    label="Mã phương tiện"
+                    value={newPhuongTien.maPhuongTien || ""}
                     onChange={handleInputChange}
-                    className="col-span-3"
                     required
+                    error={errors.maPhuongTien}
+                    placeholder="Nhập mã phương tiện"
                   />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
@@ -244,16 +295,15 @@ export function PhuongTienPage() {
                   </select>
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="bienSo" className="text-right">
-                    Biển số
-                  </Label>
-                  <Input
+                  <FormField
                     id="bienSo"
                     name="bienSo"
-                    value={newPhuongTien.bienSo}
+                    label="Biển số"
+                    value={newPhuongTien.bienSo || ""}
                     onChange={handleInputChange}
-                    className="col-span-3"
                     required
+                    error={errors.bienSo}
+                    placeholder="Nhập biển số xe"
                   />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
@@ -325,16 +375,15 @@ export function PhuongTienPage() {
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="maPhuongTien" className="text-right">
-                    Mã phương tiện
-                  </Label>
-                  <Input
+                  <FormField
                     id="maPhuongTien"
                     name="maPhuongTien"
-                    value={currPhuongTien.maPhuongTien}
-                    disabled
-                    className="col-span-3"
+                    label="Mã phương tiện"
+                    value={currPhuongTien.maPhuongTien || ""}
+                    onChange={handleInputChange}
                     required
+                    error={updateErrors.maPhuongTien}
+                    placeholder="Nhập mã phương tiện"
                   />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
@@ -374,16 +423,15 @@ export function PhuongTienPage() {
                   </select>
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="bienSo" className="text-right">
-                    Biển số
-                  </Label>
-                  <Input
+                  <FormField
                     id="bienSo"
                     name="bienSo"
-                    value={currPhuongTien.bienSo}
-                    onChange={handleUpdateInputChange}
-                    className="col-span-3"
+                    label="Biển số"
+                    value={currPhuongTien.bienSo || ""}
+                    onChange={handleInputChange}
                     required
+                    error={updateErrors.bienSo}
+                    placeholder="Nhập biển số xe"
                   />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
