@@ -29,8 +29,7 @@ import {
   GET_ALL_HOKHAU_ROUTE,
   GET_ALL_NHANKHAU_ROUTE,
 } from "@/utils/constant"
-import { ValidationRules, validateForm } from "@/utils/validation.ts"
-import { FormField } from "@/components/ui/form-field.tsx"
+import { ValidationRules, validateForm } from "@/utils/validation"
 
 export function PhuongTienPage() {
   const [phuongTienList, setPhuongTienList] = useState<PhuongTien[]>([])
@@ -247,20 +246,25 @@ export function PhuongTienPage() {
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <FormField
-                    id="maPhuongTien"
-                    name="maPhuongTien"
-                    label="Mã phương tiện"
-                    value={newPhuongTien.maPhuongTien || ""}
-                    onChange={handleInputChange}
-                    required
-                    error={errors.maPhuongTien}
-                    placeholder="Nhập mã phương tiện"
-                  />
+                  <Label htmlFor="maPhuongTien" className="text-right">
+                    Mã phương tiện <span className="text-destructive">*</span>
+                  </Label>
+                  <div className="col-span-3">
+                    <Input
+                      id="maPhuongTien"
+                      name="maPhuongTien"
+                      value={newPhuongTien.maPhuongTien || ""}
+                      onChange={handleInputChange}
+                      placeholder="Nhập mã phương tiện"
+                      className={`${errors.maPhuongTien ? "border-destructive" : ""}`}
+                      required
+                    />
+                    {errors.maPhuongTien && <p className="text-sm text-destructive mt-1">{errors.maPhuongTien}</p>}
+                  </div>
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="maHoKhau" className="text-right">
-                    Hộ khẩu
+                    Hộ khẩu <span className="text-destructive">*</span>
                   </Label>
                   <select
                     id="maHoKhau"
@@ -280,7 +284,7 @@ export function PhuongTienPage() {
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="loaiXe" className="text-right">
-                    Loại xe
+                    Loại xe <span className="text-destructive">*</span>
                   </Label>
                   <select
                     id="loaiXe"
@@ -295,20 +299,25 @@ export function PhuongTienPage() {
                   </select>
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <FormField
-                    id="bienSo"
-                    name="bienSo"
-                    label="Biển số"
-                    value={newPhuongTien.bienSo || ""}
-                    onChange={handleInputChange}
-                    required
-                    error={errors.bienSo}
-                    placeholder="Nhập biển số xe"
-                  />
+                  <Label htmlFor="bienSo" className="text-right">
+                    Biển số <span className="text-destructive">*</span>
+                  </Label>
+                  <div className="col-span-3">
+                    <Input
+                      id="bienSo"
+                      name="bienSo"
+                      value={newPhuongTien.bienSo || ""}
+                      onChange={handleInputChange}
+                      placeholder="Nhập biển số xe"
+                      className={`${errors.bienSo ? "border-destructive" : ""}`}
+                      required
+                    />
+                    {errors.bienSo && <p className="text-sm text-destructive mt-1">{errors.bienSo}</p>}
+                  </div>
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="tenChuXe" className="text-right">
-                    Chủ xe
+                    Chủ xe <span className="text-destructive">*</span>
                   </Label>
                   {newPhuongTien.maHoKhau ? (
                     <select
@@ -334,7 +343,7 @@ export function PhuongTienPage() {
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="ngayDangKy" className="text-right">
-                    Ngày đăng ký
+                    Ngày đăng ký <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="ngayDangKy"
@@ -355,6 +364,7 @@ export function PhuongTienPage() {
                     name="ghiChu"
                     value={newPhuongTien.ghiChu}
                     onChange={handleInputChange}
+                    placeholder="Nhập ghi chú (nếu có)"
                     className="col-span-3"
                   />
                 </div>
@@ -375,20 +385,21 @@ export function PhuongTienPage() {
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <FormField
+                  <Label htmlFor="maPhuongTien" className="text-right">
+                    Mã phương tiện
+                  </Label>
+                  <Input
                     id="maPhuongTien"
                     name="maPhuongTien"
-                    label="Mã phương tiện"
                     value={currPhuongTien.maPhuongTien || ""}
-                    onChange={handleInputChange}
-                    required
-                    error={updateErrors.maPhuongTien}
-                    placeholder="Nhập mã phương tiện"
+                    onChange={handleUpdateInputChange}
+                    className="col-span-3"
+                    disabled
                   />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="maHoKhau" className="text-right">
-                    Hộ khẩu
+                    Hộ khẩu <span className="text-destructive">*</span>
                   </Label>
                   <select
                     id="maHoKhau"
@@ -408,7 +419,7 @@ export function PhuongTienPage() {
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="loaiXe" className="text-right">
-                    Loại xe
+                    Loại xe <span className="text-destructive">*</span>
                   </Label>
                   <select
                     id="loaiXe"
@@ -423,20 +434,25 @@ export function PhuongTienPage() {
                   </select>
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <FormField
-                    id="bienSo"
-                    name="bienSo"
-                    label="Biển số"
-                    value={currPhuongTien.bienSo || ""}
-                    onChange={handleInputChange}
-                    required
-                    error={updateErrors.bienSo}
-                    placeholder="Nhập biển số xe"
-                  />
+                  <Label htmlFor="bienSo" className="text-right">
+                    Biển số <span className="text-destructive">*</span>
+                  </Label>
+                  <div className="col-span-3">
+                    <Input
+                      id="bienSo"
+                      name="bienSo"
+                      value={currPhuongTien.bienSo || ""}
+                      onChange={handleUpdateInputChange}
+                      placeholder="Nhập biển số xe"
+                      className={`${updateErrors.bienSo ? "border-destructive" : ""}`}
+                      required
+                    />
+                    {updateErrors.bienSo && <p className="text-sm text-destructive mt-1">{updateErrors.bienSo}</p>}
+                  </div>
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="tenChuXe" className="text-right">
-                    Chủ xe
+                    Chủ xe <span className="text-destructive">*</span>
                   </Label>
                   {currPhuongTien.maHoKhau ? (
                     <select
@@ -462,7 +478,7 @@ export function PhuongTienPage() {
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="ngayDangKy" className="text-right">
-                    Ngày đăng ký
+                    Ngày đăng ký <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="ngayDangKy"
@@ -483,6 +499,7 @@ export function PhuongTienPage() {
                     name="ghiChu"
                     value={currPhuongTien.ghiChu}
                     onChange={handleUpdateInputChange}
+                    placeholder="Nhập ghi chú (nếu có)"
                     className="col-span-3"
                   />
                 </div>
