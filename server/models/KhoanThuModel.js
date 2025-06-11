@@ -18,6 +18,7 @@ const KhoanThuSchema = new mongoose.Schema({
     },
     soTien: {
         type: Number,
+        required: true
     },
     ghiChu: {
         type: String,
