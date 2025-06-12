@@ -11,6 +11,7 @@ import phieuNopRoutes from './routes/PhieuNopRoutes.js';
 import tttvRoutes from './routes/TamTruTamVangRoutes.js';
 import activityRoutes from './routes/ActivityLogRoutes.js';
 import phuongTienRoutes from './routes/PhuongTienRoutes.js';
+import phiGuiXeRoutes from './routes/PhiGuiXeRoutes.js';
 
 dotenv.config();
 
@@ -39,6 +40,7 @@ app.use('/api/phieu-nop', phieuNopRoutes);
 app.use('/api/tam-tru-tam-vang', tttvRoutes);
 app.use('/api/activity', activityRoutes);
 app.use('/api/phuong-tien', phuongTienRoutes);
+app.use('/api/phi-gui-xe', phiGuiXeRoutes);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

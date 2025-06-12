@@ -75,7 +75,8 @@ export function PhiGuiXePage() {
         { withCredentials: true },
       )
       if (response.status === 201) {
-        setPhiGuiXeList([...phiGuiXeList, ...response.data])
+        console.log(response.data.data);
+        setPhiGuiXeList([...phiGuiXeList, ...response.data.data])
         setIsGenerateDialogOpen(false)
       }
     } catch (error) {
@@ -90,7 +91,7 @@ export function PhiGuiXePage() {
         setPhiGuiXeList((prev) =>
           prev.map((phi) =>
             phi.maPhiGuiXe === maPhiGuiXe
-              ? { ...phi, trangThai: "Đã thu", ngayThu: new Date().toISOString(), nguoiThu: "Admin" }
+              ? response.data
               : phi,
           ),
         )
